@@ -20,35 +20,41 @@ header-includes:
 
 # Data
 
-Overall description of the dataset goes here
+We work with an extremely rich dataset from the Velehanden platform from its inception to February 2nd, 2020. It registers volunteers' activity on the platform, including their entries, checks, and all metadata surrounding these two actions such as timestamps, user IDs, comments, etc. It is data at the level of the individual action, that is, each entry is a separate observation. In addition, we also have the metadata for the communication of volunteers, project staff, and picturae staff on the forum (though not the content of the messages). Finally, we have some project level information, such as the name, description, point system, and so forth.
 
+We observe the Velehanden platform over an eight year period, 2012-2020 (figure \@ref(fig:overall)). The platform grew substantially in this period, and reached a peak in 2016–8. This was the period when most scans were processed, there was the highest number of active volunteers, and the most forum communication. The inflow of new volunteers, however, was roughly the same over entire period. From 2018 onwards a slowdown on the platform can be observed, though activity remains high compared to the 2012–16 period.
+
+![Key indicators of the platform over time.](out/platformoverall.pdf){#fig:overall}
+
+    Table of our JIW-measures for the entire platform here?
+
+\clearpage
 # Propositions
 ## Proposition 1: most project participants came from the pool of existing volunteers on the platform
 
-```{r newuserhist, echo=FALSE, fig.cap="Distribution of the share of new volunteers by project.", out.width="66%", fig.align = "center"}
-knitr::include_graphics("out/new_volunteers_byproject.pdf")
-```
+![Distribution of projects' share of new volunteers](out/new_volunteers_byproject.pdf){#fig:newuserhist width=66%}
 
-To investigate the proposition that most project participants came from the pool of existing volunteers, we first look at the average number of new volunteers in a project as a share of all volunteers in a project. To calculate this, new volunteers are detected by looking for new user IDs in the sorted dataset. For each project, the number of new volunteers is divided by the number of unique volunteers. The resulting distribution of share by project is shown in figure \@ref(fig:newuserhist). On average, `r round(scan("out/mean_new_volunteers_byproject.txt") * 100)`% of the volunteers in a project were new to the platform. Weighted by the number of volunteers in a project, this number increases to 42%. If we exclude projects that started before 2012 when the platform was very young, the average share of new volunteers is 40%.
+To investigate the proposition that most project participants came from the pool of existing volunteers on the platform, we first look at the number of new volunteers in a project as a share of all volunteers in a project. To calculate this, new volunteers are detected by looking for new user IDs in the timestamp sorted entry dataset. For each project, the number of new volunteers is divided by the number of unique volunteers. The resulting distribution of share by project is shown in figure \@ref(fig:newuserhist). On average, `r round(scan("out/mean_new_volunteers_byproject.txt") * 100)`% of the volunteers in a project were new to the platform. Weighted by the number of volunteers in a project, this number increases to 42%. If we exclude projects that started before 2012 when the platform was very young, the average share of new volunteers is 40%.
 
 <!-- If we weight this by the number of scans in a project, the average share of new volunteers is 45c. -->
 
+A number of projects managed to attract a large share of new volunteers. Some of these were projects with very few volunteers or the very first project at the Velehanden platform. However, three sizable projects (more than 10 volunteers) managed to attract more than 80% new volunteers after 2013.
 
-A number of projects managed to attract a large share of new volunteers. Some of these were projects with very few volunteers or the very first project at the velehanden platform. However, three sizable projects (more than 10 volunteers) attracted more than 80% new volunteers after 2013.
+![Average project share of new volunteers over time. Note: 2011 data omitted](out/newvolunteers_overtime.pdf"){#fig:newusertime width=66%}
 
-```{r newusertime, echo=FALSE, fig.cap="Average project share of new volunteers over time. Note: 2011 data omitted.", out.width="66%", fig.align = "center"}
-knitr::include_graphics("out/newvolunteers_overtime.pdf")
-```
+Figure \@ref(fig:newusertime) shows the development of the average share of new volunteers in projects over time, by calculating this share for each year (that is, a project is counted in each year it was active). In this figure, data for 2011 has been omitted because this was the period when the platform started, and by definition the number of new volunteers would be very high. It should also be noted that the shares in this figure are lower than when this share is calculated for the entire period as a whole (see above: _c_. 30% rather than _c_. 40%). The reason for this is that while a project may attract a certain number new volunteers over its lifetime, in any given sub-period this figure will be lower because a new volunteer can arrive only once. On the other hand, the denominator in this measure, the number of active volunteers in that quarter, decreases less quickly than the number of new volunteers in a project.
 
-Figure \@ref(fig:newusertime) shows the development of the average share of new volunteers in projects over time, by calculating this share for each quater from quarterly project-level data. In this figure, data for 2011 has been omitted because this was the period when the platform started, and by definition the number of new volunteers would be very high. It should also be noted that the shares in this figure are lower than when this share is calculated for the entire period as a whole (see above: c. 40% rather than c. 15%). The reason for this is that while a project may attract a certain number new volunteers over its lifetime, in any given sub-period this figure will be lower because a new volunteer can arrive only once. On the other hand, the denominator in this measure, the number of active volunteers in that subperiod, decreases less quickly than the number of new volunteers in a project will.
+![Average project share of new volunteers over time, by total activity of volunteer. Note: 2011 data omitted](out/newvolunteers_overtime_byact.pdf"){#fig:newusertimeact width=75%}
 
-The trend in figure \@ref(fig:newusertime) is that the average share of new volunteers in projects is declining over time. An important reason for this will be that the pool of active pre-existing volunteers is growing over time at a rate of about five per month (figure \@ref(fig:activepool)). On a platform characterised by a growing active volunteer pool, and if a steady share of volunteers begins in a new project, the share of new volunteers to pre-existing volunteers will decrease unless substantial new inflow of volunteers is realised by the projects.
+<!-- drop this as the decline is due to end of observation window largely? -->
 
-```{r activepool, echo = FALSE, fig.cap = "Pool of active volunteers minus new volunteers over time.", fig.align = "center", out.width="66%"}
-knitr::include_graphics("out/activepool.pdf")
-```
+While figures \@ref(fig:newuserhist) and \@ref(fig:newusertime) show that projects can attract a high number of new volunteers, it is important to keep in mind that not all new volunteers end up being equally active. New volunteers that would become very active are much rarer, making up about 10% of all new volunteers. Figure \@ref(fig:newusertimeact) shows that these active volunteers were become harder to attract over the life of the platform, though to an extent this will be because new volunteers that have joined the platform in the last two years have not had the time to enter many scans. 
 
-On average, a project on velehanden had a majority (c. 60 %) of volunteers that was not new to the platform. That said, this figure is perhaps not as high as one might expect. For a good number of projects, the number of new volunteers could have been sufficient to complete the project in a reasonable time. Of course, this scenario of starting a project from scratch neglects the possibilities that (i) volunteers were attracted to a platform with a large number of active volunteers and projects, and (ii) that the communication channels of the platform were important in attracting new volunteers. Moreover, it neglects the fact that substantial resources are required to set up a citizen-science platform. That said, it is striking that many projects manged to attract a substantial number of new volunteers which could have been enough to complete many of the project in 2–3 times the time it took now.
+The trend in figures \@ref(fig:newusertime) and \@ref(fig:newusertimeact) is that the average share of new volunteers in projects is declining over time. An important reason for this will be that the pool of active pre-existing volunteers is growing over time at a rate of about five per month (figure \@ref(fig:activepool)). On a platform characterised by a growing active volunteer pool, and if a steady share of volunteers begins in a new project, the share of new volunteers to pre-existing volunteers will decrease unless substantial new inflow of volunteers is realised by the projects.
+
+![Pool of active, non-new volunteers over time.](out/activepool.pdf){#fig:activepool width=66%}
+
+On average, a project on Velehanden had a majority (c. 60 %) of volunteers that was not new to the platform. This figure is perhaps not as high as we might expect from the interviews. For a good number of projects, the number of new volunteers could have been sufficient to complete the project in a reasonable time. However, many of these new volunteers were not as active as some of the platform veterans. Moreover, this scenario of starting a project without access to a pool of pre-existing volunteers neglects the possibilities that (i) volunteers were attracted to a platform with a large number of active volunteers and projects, and (ii) that the communication channels of the platform were important in attracting new volunteers. Finally, it neglects the fact that substantial resources are required to set up a citizen-science platform. That said, it is striking that many projects manged to attract a substantial number of new volunteers which could have been enough to complete many of the project in 2–3 times the time it took now.
 
 Open questions at this stage:
 
@@ -58,84 +64,146 @@ Open questions at this stage:
 * The peaks and troughs in the period 2012–15 in figure \@ref(fig:newusertime) need an explanation. Preliminary guess would be that there  new, attractive projects started around this time, while the platform is still relatively small compared to the size it would later take. This needs a closer look though.
 * Do the patterns vary by amount of outreach which we observe for some projects?
 
-
 ## Proposition 2: Participants from prior projects join new projects of the same organization.
+
 ## Proposition 3: Participants from prior projects join new projects with similar tasks (or sources) from other organizations.
 
-For now, we focus on on whether volunteers tend to do projects by the same organisation. This can readily be expanded to whether volunteers tend to do projects of the same type. At the end of this section there is an overview of the sort of variables we can use for this.
-
-To calculate whether participants stay at the same organisation, we can simply calculate the share of new projects which are from an organisation the volunteer previously volunteered for. For now, we ignore the size of the contribution of the volunteer in the projects. It is possible to include this at a later stage, for example by setting a threshold, or by correlating the return to an organisation to the size of the contribution.
-
-Even with such a simple concept of return volunteers, one aspect that needs to be taken into account is that we would expect a certain number of return volunteers by chance alone. After all, some organisations had many projects (some even had many large projects), and a volunteer that participated in many projects could be expected to return to such an organisation even if the volunteer selected projects at random.
-
-```{r orgn, echo = FALSE}
+<!-- ```{r orgn, echo = FALSE}
 knitr::kable(data.table::fread("out/organisation.csv"))
-```
+``` -->
 
-To see whether our figures on return volunteers are higher than expected by chance alone, we create "placebo organisations". These are the same organisations, with the same number of volunteers, but distributed randomly over the dataset of volunteer-organsiation interactions. If a volunteer returns to this placebo organisation, it would be due to chance alone.
+![Flows of volunteers between organisations.](out/flows_org.pdf){#fig:orgflows}
 
-```{r returnvolunteers, echo = FALSE, fig.cap = "Distribution of share of volunteers' return projects compared with placebo returns. Note: volunteers only participating in one project excluded.", fig.align = "center", out.width="66%"}
-knitr::include_graphics("out/returnvolunteers.pdf")
-```
+To see whether participants stay at the same organisation, we first visualise the flows between projects. To do that, we only look at the 8 organisations with the most projects, and gather all other organisations together in an "other" category. In figure \@ref(fig:orgflows), it can be seen that the volunteers of the Amsterdam City Archives are fairly loyal, but elsewhere there is a lot of changing between organisations. Doing the same for flows between types of projects (figure \@ref(fig:typeflows)), shows that in terms of number of volunteers, indexation projects are the largest category by far, and as a result, it attracts volunteers from other types of projects, and loses them to other types. Furthermore, it seems that tagging projects have some degree of volunteer retention compared to the other projects.
 
-Figure \@ref(fig:returnvolunteers) shows the distribution of the share of projects per volunteer which was a return project. Volunteers which contributed to one project only are excluded, as they by definition could not have been return volunteers. If we compare the actual returns to the placebo, it can be seen that in the case of the placebo, more volunteers had zero return projects. In case of the actual projects, more volunteers began in projects by the same organisation. On average, 18 % of volunteers new projects were return projects. By chance alone, this figure would be 12 %.
+![Flows of volunteers between types of projects](out/flows_type.pdf){#fig:typeflows}
 
-```{r directreturnvolunteers, echo = FALSE, fig.cap = "Distribution of share of volunteers' direct eturn projects compared with placebo returns. Note: volunteers only participating in one project excluded.", fig.align = "center", out.width="66%"}
-knitr::include_graphics("out/directreturnvolunteers.pdf")
-```
+With a skewed distribution of volunteers over organisations and types of projects, one would expect a certain number of return volunteers by chance alone. After all, some organisations had many (large) projects, and a volunteer that participated in one of their projects could be expected to return to such an organisation even if the volunteer selected projects at random.
 
-In the calculations above, we considered any return to a new project by the same organisation a return project. If we only look at cases of direct return projects, where a volunteer’s first new project is by the same organisation, the figures are lower, but still higher than expected by chance alone. On average, 13 % of volunteers' immediate new projects were by the same organisation (7 % in case of placebo organisation). The distribution is shown in figure \@ref(fig:directreturnvolunteers), which is similar to that of all return projects above.
+To see whether our figures on return volunteers are higher than expected by chance alone, we create "placebo organisations". These are the same organisations, with the same number of volunteers, but randomly permuted over the dataset of volunteer-organisation interactions. If a volunteer returns to a placebo organisation, it would be due to chance alone.
 
-Finally, we try to visualise the flows between projects. To do that, we only look at the 8 organisations with the most projects, and gather all other organisations together in an "other" category. In figure \@ref(fig:flows), it can be seen that Amsterdam volunteers are fairly loyal, but elsewhere there is a lot of swapping. (more here)
+![Distribution of share of volunteers' return projects returning to projects (black), compared with placebo projects (red). The top row shows the share of any (left) and direct (right) returns to the same organistion; the bottom row returns to the same type of project. Notes: logarithmic scale; volunteers participating in only one project are excluded](out/returns.pdf){#fig:returns}
 
-```{r flows, echo = FALSE, fig.cap = "Flows of volunteers between projects.", fig.align = "center"}
-knitr::include_graphics("out/flows.pdf")
-```
+The top row of figure \@ref(fig:returns) shows the distribution of the share of projects per volunteer which was a return project. Volunteers which contributed to one project only are excluded, as they by definition could not have been return volunteers. If we compare the actual returns to the returns to a placebo, it can be seen that more volunteers began in projects by the same organisation. On average, 18 % of volunteers new projects were return projects. By chance alone, this figure would be 11 %.
 
+In the calculations above, we considered any return to a new project by the same organisation a return project. If we only look at cases of direct return projects, where a volunteer’s first new project is from the same organisation, the figures are lower, but still higher than expected by chance alone. On average, 13 % of volunteers' immediate new projects were by the same organisation (6 % in case of placebo organisation). The distribution is shown in the top right panel of figure \@ref(fig:returns), and is very similar to that of all return projects above.
+
+In the bottom row of figure \@ref(fig:returns) we look at volunteers returning to the same type of project. In calculating this we follow the categorisation of the Velehanden platform.^[These are in descending order of frequency: indexeren, tagging, selection, marking, geo, transcription, transkribus, videos, koppelen.] Again, the distribution is very skewed, with most projects by far being indexation projects (66 %) where the volunteers enter part of the scans in forms. We again use the placebo technique to calculate the return shares expected solely due to chance and the distribution of the number volunteers over the types of projects. Doing this shows that while relatively speaking there are more volunteers returning to the same type of projects. On average, 53% of the projects a volunteer joins are returns to the same type of project and 49 % are direct returns, the difference from what we can expect from chance alone is not as large as was the case the return rate for organisations (49 % would be returns to the same type of project and 44% direct returns).
+
+These results suggest that once we correct for the preponderance of certain organisations and certain types of projects (indexation in particular),  volunteers' preferences can be seen to be  more for a certain organisation, than for a certain type of project. 
 
 open issues:
 
-* look at size of contribution in previous projects
+* look at size of contribution in previous projects, for example by setting a threshold, or by correlating the return to an organisation to the size of the contribution.
 * we just look at starting dates of volunteers, not whether they've actually completed a project or even stayed any length of time. This might be picking up some noise.
+* isn't it way easier to make a four-way plot for the distributions
+* the velehanden categorisation is not perfect, as at least one of the transcription projects is actually an indexation project. However, changing this does not qualitatively change the results, and any categorisation would probably end up at some variant of "there are a lot of indexation projects".
+* we can look at other characteristics of projects, though often this data is incomplete.
+    * location of project (often missing)
+    * period of project (often missing, could probably be manually gathered)
+    * type of material (registers, notarial acts, etc.)
 
 ## Proposition 4: Projects with higher forum activity are likely to progress at a faster pace
 
-```{r forumtime, echo = FALSE, fig.cap = "Weekly posts on forums over time", fig.align = "center", out.width="66%"}
-knitr::include_graphics("out/forumposts.pdf")
-```
+A first way to look at the relation between forum activity and project activity is to take the number of posts on the forum and the number of entered scans per project. Note that 7 % of the forum posts were not associated with any project and these messages are omitted from the analyses below. These were mostly concentrated in the first three years of the platform's existence (2011–2013).
 
-To see if projects with more forum activity also had higher project activity, we first look at the project level. We calculate the number of scans per project, and the number of forum posts for a project. Note that 7 % of the forum posts were not associated with any project and these messages are omitted from the analyses below. These were mostly concentrated in the first three years of the platform's existence (2011–2013). Finally, 9 out of 93 projects in the forums are not yet mapped to the entry data because there names do not match.
+![Total forum posts and total scans.](out/posts_scans_project.pdf){#fig:forumscans}
 
-At the project level, we can find a strong correlation of the number of posts and the number of scans. A project with 1 % more forum posts had 0.86 % more scans (figure \@ref(fig:forumscans)).
+At the project level, we can find a strong correlation of the number of posts and the number of scans. A project with 1 % more forum posts had 0.86 % more scans (figure \@ref(fig:forumscans)). Because many projects ran for a long time, it also make sense to analyse the relation between project and forum activity for smaller subperiods. Weeks are chosen as the unit of time because it strikes a good balance between being relevant for volunteers (forum activity one month ago is probably not very relevant) and a sufficiently wide aggregation to meaningfully measure differences between forums and projects (daily counts, for example will vary too much from one day to the next). Looking at weekly scans (figure \@ref(fig:forumscansweekly)) we again find a positive association. One percent more forum posts per week in a project is associated with 0.30 % more scans in the same project.
 
-```{r forumscans, echo = FALSE, fig.cap = "Total forum posts and total scans", fig.align = "center", out.width="100%"}
-knitr::include_graphics("out/posts_scans_project.pdf")
-```
-
-Above all we want to know whether projects with more active forums are faster to complete. To see this, we look at scans and messages per week. Weeks are chosen as the unit of time because it strikes a good balance between being relevant for volunteers (forum activity one month ago is probably not very relevant) and a sufficiently wide aggregation to meaningfully measure differences between forums and projects (daily counts, for example will vary too much from one day to the next).
-
-Looking at weekly scans we again find a positive association. One percent more forum posts per week in a project is associated with 0.30 % more scans in the same project.
-
-```{r forumscansweekly, echo = FALSE, fig.cap = "Weekly forum posts and weekly scans", fig.align = "center", out.width="100%"}
-knitr::include_graphics("out/posts_scans_weekly.pdf")
-```
+![Weekly forum posts and weekly scans](out/posts_scans_weekly.pdf){#fig:forumscansweekly}
 
 However, reverse causality looms large in both the aggregate and the weekly relations. Are projects more active because volunteers can communicate on the forum, or do they communicate more on the forum because the project is active, giving volunteers more to talk about in terms of issues and curiosities? Similarly, active projects would have more active volunteers, allowing for more interactions on the forum.
 
-Currently, we cannot solve this issue in a satisfying way. Ideally, we would find a source of quasi-random variation in the forum data.^[Looking at lagged data is unfortunately rarely a cure for this issue (Bellemare, Masaki and Pepinsky 2017).] For example, if forum functionality improved at some point, and this resulted in more forum use, we could use this break to see what the effect of higher forum activity that can be assumed to not be caused by project activity on the platform. However, no such feature of the data is currently known.
+Currently, we cannot solve this issue in a satisfying way. Ideally, we would find an exogenous shock in the forum data.^[Looking at lagged data is unfortunately rarely a cure for this issue (Bellemare, Masaki and Pepinsky 2017).] For example, if forum functionality improved at some point, and this resulted in more forum use, or if the forum was broken at any point in time, we could use such trend breaks to see what the effect of higher forum activity that can be assumed to not be caused by project activity on the platform. However, no such feature of the data is currently known.
 
-One thing we can do is look at the relation between project activity and forum activity by Picturae staff, project staff, and project controllers. Arguably, these posts are driven less by the opportunities for conversation from the project.^[Ideally we look at topics started by staff, but this is not yet implemented]. Even here, however, the possibility that staff is simply responding to an active project should not be discounted.
+One thing we can do is look at the relation between project activity and forum activity by Picturae staff, project staff, and project controllers. Arguably, these posts are driven less by the opportunities for conversation from the project.^[Ideally we look at topics started by staff, but this is not yet implemented.] Even here, however, the possibility that staff is more likely to respond to an active project should not be discounted.
 
-Looking at this data shows that the relation is attenuated, but still positive and statistically significant (figures \@ref(fig:forumscans) and \@ref(fig:forumscansweekly), right panels). A one percent increase in forum posts by staff is associated with a 0.76 and 0.24 percent increase in project activity in the total project and weekly activity respectively. That these estimates are lower suggests that there is indeed an effect running from project activity to forum activity. It is unknown whether all of that effect is filtered out.
+Looking at this data shows that the relation is attenuated, but still positive and statistically significant (figures \@ref(fig:forumscans) and \@ref(fig:forumscansweekly), right panels). A one percent increase in forum posts by staff is associated with a 0.76 and 0.24 percent increase in project activity in the total project and weekly activity respectively. That these estimates are lower suggests that there is indeed an effect running from project activity to forum activity. It is unlikely that the the full effect is now filtered out.
 
 ## Proposition 5: The speed at which questions are answered and issues resolved through the forum influences project progress.
 
-## Proposition 6
-## Proposition 7
+In addition to general activity on the forum, the responsiveness of staff and other volunteers on the forum might also be important for project activity. To analyse this, we take the first post from every forum thread, and calculate how long it took until the first new post was made. We thus assume this new post is a response to the original post. As elsewhere, we look at weekly and total project numbers.
 
+![Distribution of average week response times (log scale)](out/hist_weekly_response_times.pdf){#fig:histreponsetimes width=66%}
+
+First we look at the distribution of response times. These are presented in figure \@ref(fig:histreponsetimes), where it can be seen that these varied widely. Nearly half had an answer within an hour, but 13 % had to wait more than a day, and 3 % did not have a response in a week.
+
+![Distribution of average week response times (log scale), by group](out/dens_weekly_response_times_bygroup.pdf){#fig:densresponsetimesgrp width=66%}
+
+We can also calculate these figures per outreach group.^[Groups one and two are high and low outreach groups in the interviews respectively; the other group contains all other projects.] Figure \@ref(fig:densresponsetimesgrp) shows this comparison, where it can be seen that the two groups actually displayed longer response times than the other projects. Comparing groups one and two, we see that group one had slightly faster response times (21 v. 29 hours, on average; but much smaller when looking at medians: 128 v. 134 minutes).
+
+![Median response time over time, measured at time of response. Response time on logarithmic scale.](out/responsetimes_over_time.pdf){#fig:responsestimetime width=66%}
+
+Average response time on the forum improved over time (figure \@ref(fig:responsestimetime)). Especially in the second half of 2016, a strong reduction can be seen as median response time drops from 3.3 hours to 0.9 hours.
+
+The next step is to check the correlation of scan entries with forum responsiveness. To do this, we need to link response times to scan entries, which can then be aggregated to weekly or project-wide figures. To do this we use the timestamp of the the moment a forum post is responded to. The alternative, when the topic was created, is not suited because at that point volunteers cannot know what the response time will be. However, working with the moment the topic was created is not perfect, because at long response times, volunteers will notice a substantial delay well before a response made.^[Additionally, 5% of topics never got a response and these had to be excluded from the analysis.]
+
+![Volunteer activity and response times in forum (top row) and entry checks (bottom)](out/delays_activity.pdf){#fig:delaysactivity}
+
+At both the project level and the project-per-week level a negative correlation can be found between forum response times and the number of entries (figure \@ref(fig:delaysactivity), top row). The effect is modest when looking at weakly data, with 1% increase in forum response times being associated with a -0.09% drop in activity. When looking at the project level, it can be seen that the correlation is stronger, with a 1% increase in response time being associated with a -0.69% drop in activity. However, 
+
+It is interesting to compare these numbers to the effects of delays in entry checking, which we know from previous work on a single project on the platform to have a strong negative relation with volunteer activity (De Moor, Rijpma, and Prats López 2019). Looking at delays in entry checking in figure \@ref(fig:delaysactivity) (bottom row), the relation in the weekly data is indeed stronger (-0.26%) than that for the forum responsiveness. At the project level, however, no clear relation can be found.
+
+Overall, we find evidence for the expected relation between responsiveness on the forum as well in the checking of the entries of the volunteers. The latter is the stronger of the two relationships in the weekly data. Moreover, for the forum data it should be remembered that reverse causality remains an issue: some of the responses will be by other volunteers, in which case the fact that the project is an active one, can lead to more activity and shorter response times on the forum. The delays in checking suffer less from this relation as these are more likely to be done or steered by project staff.^[Volunteers could get a role as _controleur_, but this is not trivial to add to the data. For 533 out of 13041 users of the platform (including non-entering users) we could observe double roles.]
+
+Todo?:
+
+* why did the platform median forum response time drop so drasically after 2016? 
+* filter out 1st reponse by topic starter
+* check for responses of staff only?
+* break this by outreach-y somehow?
+* figure \@ref(fig:histreponsetimes) shows a peak at 16-24 hours, which is suggestive of some "answer on the next day" schedule -- maybe investigate this a bit, e.g. see if there were any projects that did this a lot?
+* Have some sort of cutoff saying "this just qualifies as very late"
+* It could be useful to check what happens when we look at the volunteer level, rather than at the project / project-per-week level. Arguably, delays could demotivate individuals in particular. We could check whether posting a message which get a slow response (or a late response) is followed by this volunteer entering less scans.
+
+## Proposition 6: The accumulation of points is more important than the material rewards.
+## Proposition 7: The accumulation of points by project participants influences the progress of a project.
+
+To investigate propositions about the point/coupon system, it is important to make clear what data we have on the point system, as it has more issues than the other data:
+
+* All projects had a point system, but not all projects used coupons. We know whether a project used coupons and whether it allowed volunteers to exchange points for coupons, which could in turn be used to buy rewards. We do not know what the distinction is between a project using coupons and a project allowing volunteers to exchange points for coupons. One possibility is that some projects, especially those of the Amsterdam City Archives, allowed the volunteers to use their points at their own website, rather than at the Velehandel platform. This was for instance the case for the "_Overgenomen Delen_" project. The online documentation only mentions the exchange of coupons, we assume that from the perspective of the volunteers, only the ability to exchange coupons for points matters.^[https://velehanden.nl/Inhoud/bestanden?name=VeleHanden%20handleiding%20deelnemers.pdf] 66 out of 103 projects allow this, a further 15 projects are said to have coupons, but do not allow volunteers to exchange points.
+* For each project we know how many points could be earned by entering data and for having data checked. The table below shows that most projects awarded the same number of points when volunteers entered data and when it was checked.
+    * It is possible to assess whether the number of points is proportional to the amount of data the volunteers had to enter. Generally, it can be said that transcription projects awarded the most points.
+* We also have data on the balance and spent points per volunteer by project. However, while the volunteer IDs usually match the IDs in the rest of the data, this is not always the case, making this usefulness of this data limited.
+
+```{r echo = FALSE}
+punten = data.table::fread("out/punten.csv")
+knitr::kable(punten, digits = 1)
+```
+
+While all project have a point system, some reward much more per entry than others though. Moreover, the projects differed in the distribution of points between entry and check, providing a much larger incentive for getting your scans checked. Finally, 64% of projects allowed volunteers to exchange points for coupons.
+
+In trying to assess the role of the points/coupon system, a first important step is to see how many of the points were actually spent. To do this, we need to take the value of spent points at face value, even if the volunteer IDs in this table are not perfect. Adding up all the spent points shows that the volunteers exchanged c. 1 million points for coupons. Total points earned are calculated from the number of entries multiplied by the points the project awarded (both upon entry and having them checked) and come to c. 4 million, meaning 75% of all points earned when unused.
+
+It could be that we find that many points go unused because many volunteers have not entered enough to claim a reward? A back of the envelop calculation suggests this is not likely. If we assume that one needs 1000 points to claim a reward, we can see that 20% of volunteers in projects qualified for that.^[See for example the [Utrecht population registers project](https://velehanden.nl/projecten/bekijk/details/project/utr_index_bvr_1850_1889)] Because of the skewed distribution of activity over volunteers, their efforts combined made for 94% of all points earned on Velehanden. 
+
+![Relation between weekly check delays and activity, by usage of point system.](out/delays_activity_bypoints.pdf){#fig:delaysbypoints}
+
+In figure \@ref(fig:delaysbypoints) the relationship between weekly delays in checking and project activity discussed above is broken down the existence of a coupon system. It can be seen that the relation between checking delays and activity was steeper in projects with the ability to exchange points for coupons, and especially the presence of a coupon system in general.^[Remember that we are not sure what the distinction between the presence of a coupon system and the ability to exchange points for coupons is.] For projects with coupon system a one percent increase in checking times is associated with a 0.4% reduction in weekly activity, compared with a 0.1% increase in the absence of a coupon system. For projects allowing volunteers to create coupons from points, a one percent increase in checking times is associated with a 0.3% reduction in weekly activity, compared with a 0.2% decrease without a point system. It was also checked whether there were any meaningful differences in the number of points awarded for entry and after an entry was checked, but no differences in the delay-activity relation were found for these cases.
+
+Overall, the effects of the point and coupon system on the Velehanden platform are hard to analyse, because some of the workings of the systems are only partially known to us. We can tentatively observe that volunteers do not use all their points to claim rewards, suggesting that this is not the only motivation of the volunteers. At the same time, we do see that projects with a coupon system were more sensitive to delays in checking entries (and thus giving points), which suggests that the ability to trade points for rewards did make volunteers more sensitive in delays in getting the full points for their work.
+
+### Open issues
+* open issue: whether the amount of points given was proportional to the task is something which could matter for volunteers. This could be added.
+
+\clearpage
 # Appendix
 ## Regression results for proposition 4
 
 ```{r results = "asis", echo = FALSE}
 cat(readLines("out/correlations.tex"))
+```
+
+\clearpage
+## Regression results for proposition 5
+
+```{r results = "asis", echo = FALSE}
+cat(readLines("out/correlations_delays.tex"))
+```
+
+\clearpage
+## Regression results for proposition 6/7
+```{r results = "asis", echo = FALSE}
+cat(readLines("out/correlations_delays_points.tex"))
 ```
