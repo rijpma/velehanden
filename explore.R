@@ -33,6 +33,7 @@ projecten = projecten[naam != "naam"]
 projecten[, project_id := id]
 projecten[, punten_bij_invoeren := as.numeric(punten_bij_invoeren)]
 projecten[, punten_bij_controle := as.numeric(punten_bij_controle)]
+projecten = projecten[naam != "demo"] # also not in idxr etc.
 
 # forum data
 users_projects <- fread("20200210_portal_gebruikers_projecten.csv")
@@ -225,6 +226,9 @@ plot(log(activity) ~ log(experience), data = exp)
 abline(lm(log(activity) ~ log(experience), data = exp), col = 2)
 summary(lm(log(activity) ~ log(experience), data = exp), col = 2)
 
+ggplot(exp, aes(log(experience), log(activity))) + geom_point() + geom_smooth() + theme_classic()
+
+
 # but of course, this does not necessarily mean that there is no project-wide effect, because we know contributions can be very lopsided
 # so once more, but to the project level
 exp = idxr[year(aangemaakt_op) > 2011, 
@@ -296,6 +300,12 @@ lijst = rbindlist(list(lijst, add), fill = TRUE)
 fwrite(lijst[, .N, by = Klantnaam][order(-N)][1:10],
     "~/repos/citsci/out/organisation.csv")
 
+setdiff(lijst$Naam, projecten$naam)
+setdiff(lijst$Naam, idxr$project)
+
+# drop because not in projecten and idxr
+lijst = lijst[!Naam %in% c("frl_bso_index", "unesco_tagging_photos")]
+
 # merge org names into idxr
 idxr = lijst[, list(Naam, Klantnaam)][idxr, on = c(Naam = "project")]
 setnames(idxr, "Naam", "project")
@@ -361,14 +371,15 @@ mypar(mfrow = c(1, 2))
 
 plot(vpo[, .N, by = floor(same_org * 10) / 10][order(floor)], 
     main = "Returns to organisation",
-    xlab = "",
+    xlab = "Share returns",
+    ylab = "N volunteers",
     lwd = 1.5, log = 'y',, type = 'o', pch = 19)
 lines(vpo[, .N, by = floor(same_placebo_org * 10) / 10][order(floor)], 
     col = 2, lwd = 1.5, type = 'o', pch = 19)
 
 plot(vpo[, .N, by = floor(same_org_direct * 10) / 10][order(floor)], 
     main = "Direct returns to organisation",
-    xlab = "",
+    xlab = "Share returns",
     ylab = "",
     lwd = 1.5, log = 'y', type = 'o', pch = 19)
 lines(vpo[, .N, by = floor(same_placebo_org_direct * 10) / 10][order(floor)], 
@@ -588,8 +599,9 @@ toplot_forum_proj = toplot_forum[, list(scans = sum(scans_per_week), mean_respon
 
 # add delays
 toplot_entry = delays[delay > (2 / 84600), # so quick is probably auto-accept
-    list(mean_check_time = mean(as.numeric(delay)) * 24),
+    list(mean_check_time = mean(as.numeric(delay)) * 24, .N),
     by = list(project, week(date_checked), year(date_checked))]
+toplot_entry = toplot_entry[mean_check_time > 0.01] # these are real, but not realistic weekly estimates, typically N ~= 1
 toplot_entry = proj_speed[toplot_entry, on = c("project", "week", "year")]
 toplot_entry_proj = toplot_entry[, list(scans = sum(scans_per_week, na.rm = TRUE), mean_check_time = mean(mean_check_time)),
     by = project]
@@ -599,7 +611,7 @@ mypar(mfrow = c(1, 2))
 plot(log(scans_per_week) ~ log(mean_response_time), 
     data = toplot_forum, 
     pch = 20,
-    xlab = "log(mean response time)",
+    xlab = "log(mean response time (hours))",
     ylab = "log(scans per week)",
     main = "Forum responses and activity (volunteer)")
 m1 = lm(log(scans_per_week) ~ log(mean_response_time), data = toplot_forum)
@@ -607,7 +619,7 @@ abline(m1, col = 2)
 plot(log(scans) ~ log(mean_response_time), 
     data = toplot_forum_proj[,-"project_id"], 
     pch = 20,
-    xlab = "log(mean response time)",
+    xlab = "log(mean response time hours)",
     ylab = "log(scans per week)",
     main = "Forum responses and activity (project)")
 m2 = lm(log(scans) ~ log(mean_response_time), data = toplot_forum_proj[,-"project_id"])
@@ -619,7 +631,7 @@ mypar(mfrow = c(1, 2))
 plot(log(scans_per_week) ~ log(mean_check_time), 
     data = toplot_entry, 
     pch = 20,
-    xlab = "log(mean response time)",
+    xlab = "log(mean response time (hours))",
     ylab = "log(scans per week)",
     main = "Entry checks and activity (volunteer)")
 m3 = lm(log(scans_per_week) ~ log(mean_check_time), data = toplot_entry)
@@ -629,7 +641,7 @@ abline(m3, col = 2)
 plot(log(scans) ~ log(mean_check_time), 
     data = toplot_entry_proj, 
     pch = 20,
-    xlab = "log(mean response time)",
+    xlab = "log(mean response time (hours))",
     ylab = "log(scans per week)",
     main = "Entry checks and activity (project)")
 m4 = lm(log(scans) ~ log(mean_check_time), data = toplot_entry_proj)
@@ -658,20 +670,25 @@ fwrite(out, "~/repos/citsci/out/punten.csv")
 idxr = projecten[, list(project = naam, project_id, punten_bij_invoeren, punten_bij_controle)][idxr, on = c("project")]
 
 # how many points are spent?
-users_projects[, sum(spent_points)] / 
+# user 6694 is a sysadmin with 12m points, 0 spent, and no last activity, so we drop
+users_projects[gebruiker_id != 6694, sum(spent_points)]
+users_projects[gebruiker_id != 6694, sum(spent_points)] / 
     idxr[, sum(punten_bij_invoeren) + sum(punten_bij_controle)]
-users_projects[, sum(spent_points)] / users_projects[, sum(saldo)]
+users_projects[gebruiker_id != 6694, sum(spent_points)] / users_projects[gebruiker_id != 6694, sum(saldo)]
+users_projects[gebruiker_id != 6694, sum(spent_points)] / users_projects[gebruiker_id != 6694, sum(saldo + spent_points)]
+
+idxr[gebruiker_id == 6694]
 
 # how many points are at lease 1000 in one project
 idxr[, sum(punten_bij_invoeren + punten_bij_controle), by = list(gebruiker_id, project)][, mean(V1 > 1000)]
-# how many of the 4m points is this?
+# how many of the 40m points is this?
 idxr[, sum(punten_bij_invoeren + punten_bij_controle), by = list(gebruiker_id, project)][, list(sum(V1[V1 > 1000]), sum(V1))][, V1 / V2]
 
 pdf("~/repos/citsci/out/saldo_v_points.pdf")
 mypar(mfrow = c(1, 2))
 x = merge(
     idxr[, sum(punten_bij_invoeren + punten_bij_controle), by = project_id],
-    users_projects[, sum(saldo), by = project_id],
+    users_projects[gebruiker_id != 6694, sum(saldo + spent_points), by = project_id],
     by = "project_id")
 plot(x[, -"project_id"], log = 'xy', 
     main = "Project",
@@ -681,7 +698,7 @@ plot(x[, -"project_id"], log = 'xy',
 curve(1 * x, add = TRUE)
 x = merge(
     idxr[, sum(punten_bij_invoeren + punten_bij_controle), by = gebruiker_id],
-    users_projects[, sum(saldo), by = gebruiker_id],
+    users_projects[gebruiker_id != 6694, sum(saldo + spent_points), by = gebruiker_id],
     by = "gebruiker_id")
 plot(x[, -"gebruiker_id"], log = 'xy',
     main = "user",
@@ -692,6 +709,15 @@ curve(1 * x, add = TRUE)
 dev.off()
 # is the delay issue driven by point spending possibility?
 # ok so generally this is ok? just not in a couple of cases?
+x[, list(V1.x / V1.y)]
+x[, list(V1.x / V1.y)][, .N, by = round(V1, 1)][order(N)]
+x[, list(V1.x / V1.y)][, .N, by = round(V1, 1)][order(round)]
+hist(x[, list(V1.x / V1.y)][V1 < 10, V1], breaks = 100)
+hist(x[, list(V1.x / V1.y)][V1 < 100, V1], breaks = 100)
+x[, quantile(V1.x / V1.y, na.rm = TRUE, 0:10 / 10)]
+x[, mean(between(V1.x / V1.y, 0.8, 1.2), na.rm = TRUE)]
+
+
 
 # plot delay and split by:
     # yes/no coupons
@@ -702,7 +728,7 @@ pdf("~/repos/citsci/out/delays_activity_bypoints.pdf", width = 9, height = 5)
 mypar(mfrow = c(1, 2))
 plot(log(scans_per_week) ~ log(mean_check_time), 
     data = toplot_entry, type = "n", 
-    xlab = "log(mean check time)",
+    xlab = "log(mean check time (hours))",
     ylab = "log(scans per week)",
     main = "No coupons")
 points(log(scans_per_week) ~ log(mean_check_time), 
@@ -713,7 +739,7 @@ abline(m1, col = 2, lwd = 1.5)
 
 plot(log(scans_per_week) ~ log(mean_check_time), 
     data = toplot_entry, type = "n" , 
-    xlab = "log(mean check time)",
+    xlab = "log(mean check time (hours))",
     ylab = "log(scans per week)",
     main = "Coupons")
 points(log(scans_per_week) ~ log(mean_check_time), 
