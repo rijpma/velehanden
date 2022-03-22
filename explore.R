@@ -559,8 +559,13 @@ response_times[, group := ifelse(naam %in% ..group2, "group2", group)]
 
 pdf("~/repos/citsci/out/hist_weekly_response_times.pdf")
 mypar()
-hist(log(as.numeric(response_times$response_time)), breaks = 30,
-    xlab = "log(response time in seconds)", main = "")
+hist(log10(as.numeric(response_times$response_time) / 3600), 
+    axes = FALSE,
+    breaks = 30,
+    xlab = "log(response time in hours)", 
+    main = "")
+axis(2)
+axis(1, at = -4:4, labels = 10^(-4:4))
 dev.off()
 
 quantile(na.omit(response_times$response_time) / 60, 1:10/10)
