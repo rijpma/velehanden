@@ -417,14 +417,14 @@ mean(vpo[nproj > 1, same_type_direct])
 mean(vpo[nproj > 1, same_placebo_type_direct])
 t.test(vpo[nproj > 1, same_type_direct], vpo[nproj > 1, same_placebo_type_direct])
 
+idxr[, uniqueN(project), by = org][order(V1)]
 idxr[, nproj_byorg := uniqueN(project), by = org]
 idxr[, largeorg := ifelse(org %in% c("Het Utrechts Archief",
         "Brabants Historisch Informatie Centrum",
         "Stadsarchief Amsterdam",
         "Westfries Archief",
         "Archief Eemland",
-        "Regionaal Archief Nijmegen",
-        "Tresoar"),
+        "Regionaal Archief Nijmegen"),
     org, "other")]
 toplot = idxr[!is.na(org), list(aangemaakt_op = min(aangemaakt_op)), by = list(project, org, largeorg, project_soort, nproj_byorg, gebruiker_id)]
 toplot = toplot[order(gebruiker_id, aangemaakt_op)]
@@ -435,7 +435,7 @@ toplot = toplot[,
         to = shift(largeorg)), 
     by = gebruiker_id]
 toplot = toplot[!is.na(to) & nfrom > 1, .N, by = list(from, to)]
-toplot[, col := RColorBrewer::brewer.pal(uniqueN(from), "Set3")[as.factor(from)]]
+toplot[, col := RColorBrewer::brewer.pal(uniqueN(from), "Paired")[as.factor(from)]]
 toplot = toplot[order(-N)]
 toplot[, from := factor(from, levels = unique(from))]
 toplot[, to := factor(to, levels = unique(to))]
