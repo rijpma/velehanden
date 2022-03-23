@@ -140,16 +140,19 @@ new_volunteers = idxr[,
         nvolunteers = uniqueN(gebruiker_id),
         nscans = .N),
     by = list(project)]
+new_volunteers[, ratio_pre_existing_volunteers := 1 - ratio_new_volunteers]
 
 # distribution of shares new volunteers
 pdf("~/repos/citsci/out/new_volunteers_byproject.pdf")
 mypar()
-hist(new_volunteers$ratio_new_volunteers, 
-    xlab = "Share new volunteers in project", 
+hist(new_volunteers$ratio_pre_existing_volunteers, 
+    xlab = "Share pre-existing volunteers in project", 
+    ylab = "N projects",
     main = "")
 dev.off()
 
 new_volunteers[year(start) > 2011, weighted.mean(ratio_new_volunteers, nvolunteers)]
+new_volunteers[year(start) > 2011, weighted.mean(ratio_pre_existing_volunteers, nvolunteers)]
 
 # list high share projects that are not small
 new_volunteers[ratio_new_volunteers > 0.8 & nvolunteers > 10 & year(start) > 2012, ]
