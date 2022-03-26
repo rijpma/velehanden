@@ -533,6 +533,7 @@ fwrite(out, "~/repos/citsci/out/punten.csv")
 # simplified point system
 idxr = projecten[, list(project = naam, project_id, punten_bij_invoeren, punten_bij_controle)][idxr, on = c("project")]
 
+# some checks on the point system
 # how many points are spent?
 # user 6694 is a sysadmin with 12m points, 0 spent, and no last activity, so we drop
 users_projects[gebruiker_id != 6694, sum(spent_points)]
@@ -572,21 +573,8 @@ plot(x[, -"gebruiker_id"], log = 'xy',
 curve(1 * x, add = TRUE)
 dev.off()
 # is the delay issue driven by point spending possibility?
-# ok so generally this is ok? just not in a couple of cases?
-x[, list(V1.x / V1.y)]
-x[, list(V1.x / V1.y)][, .N, by = round(V1, 1)][order(N)]
-x[, list(V1.x / V1.y)][, .N, by = round(V1, 1)][order(round)]
-hist(x[, list(V1.x / V1.y)][V1 < 10, V1], breaks = 100)
-hist(x[, list(V1.x / V1.y)][V1 < 100, V1], breaks = 100)
-x[, quantile(V1.x / V1.y, na.rm = TRUE, 0:10 / 10)]
-x[, mean(between(V1.x / V1.y, 0.8, 1.2), na.rm = TRUE)]
 
-
-
-# plot delay and split by:
-    # yes/no coupons
-    # autocontrole
-    # incentives from table
+# figure 10
 toplot_entry = projecten[, list(project = naam, project_id, has_coupons, has_coupon_create, has_transactions, punten_bij_invoeren, punten_bij_controle, incentive)][toplot_entry, on = c("project")]
 pdf("~/repos/citsci/out/fig_10_delays_activity_bypoints.pdf", width = 9, height = 5)
 mypar(mfrow = c(1, 2))
@@ -613,33 +601,13 @@ m2 = lm(log(scans_per_week) ~ log(mean_check_time), data = toplot_entry[has_coup
 abline(m2, col = 2, lwd = 1.5)
 dev.off()
 
-pdf("~/repos/citsci/out/delays_activity_bypointscreation.pdf", width = 9, height = 5)
-mypar(mfrow = c(1, 2))
-plot(log(scans_per_week) ~ log(mean_check_time), 
-    data = toplot_entry, type = "n", main = "No coupons creation")
-points(log(scans_per_week) ~ log(mean_check_time), 
-    data = toplot_entry[has_coupon_create == 0],
-    pch = 20)
-m3 = lm(log(scans_per_week) ~ log(mean_check_time), data = toplot_entry[has_coupon_create == 0])
-abline(m3, col = 2, lwd = 1.5)
-
-plot(log(scans_per_week) ~ log(mean_check_time), 
-    data = toplot_entry, type = "n", main = "Coupons creation")
-points(log(scans_per_week) ~ log(mean_check_time), 
-    data = toplot_entry[has_coupon_create == 1],
-    pch = 20)
-m4 = lm(log(scans_per_week) ~ log(mean_check_time), data = toplot_entry[has_coupon_create == 1])
-abline(m4, col = 2, lwd = 1.5)
-dev.off()
-
-texreg::screenreg(list(m1, m2))
-m1 = lm(log(scans_per_week) ~ log(mean_check_time)*has_coupons, data = toplot_entry)
-m2 = lm(log(scans_per_week) ~ log(mean_check_time)*has_coupon_create, data = toplot_entry)
-texreg::screenreg(list(m1, m2))
-lapply(list(m1, m2), lmtest::coeftest, vcov. = sandwich::vcovHC)
-lapply(list(m1, m2), lmtest::coeftest, vcov. = sandwich::vcovCL, cluster = ~ project)
-texreg::texreg(list(m1, m2),
-    file = "~/repos/citsci/out/correlations_delays_points.tex")
+mlist = list(m1, m2)
+cfs = lapply(mlist, lmtest::coeftest, vcov. = sandwich::vcovHC)
+ses = lapply(cfs, `[`, i=, j = 2)
+pvs = lapply(cfs, `[`, i=, j = 4)
+screenreg(mlist, override.se = ses, override.pval = pvs)
+htmlreg(mlist, override.se = ses, override.pval = pvs,
+    file = "~/repos/citsci/out/fig_10_regression.html")
 
 # preliminaries #
 # ------------- #
