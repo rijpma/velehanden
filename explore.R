@@ -465,6 +465,7 @@ toplot_entry = proj_speed[toplot_entry, on = c("project", "week", "year")]
 toplot_entry_proj = toplot_entry[, list(scans = sum(scans_per_week, na.rm = TRUE), mean_check_time = mean(mean_check_time)),
     by = project]
 
+# figure 8
 pdf("~/repos/citsci/out/fig_8_forumdelays_activity.pdf", height = 5, width = 9)
 mypar(mfrow = c(1, 2))
 plot(log(scans_per_week) ~ log(mean_response_time), 
@@ -485,7 +486,11 @@ m2 = lm(log(scans) ~ log(mean_response_time), data = toplot_forum_proj[,-"projec
 abline(m2, col = 2)
 dev.off()
 
-# figure 8
+
+# proposition 4 #
+# --------------#
+# delay checks are bad
+# figure 9
 pdf("~/repos/citsci/out/fig_9_checkdelays_activity.pdf", height = 5, width = 9)
 mypar(mfrow = c(1, 2))
 plot(log(scans_per_week) ~ log(mean_check_time), 
@@ -518,7 +523,6 @@ htmlreg(mlist, override.se = ses, override.pval = pvs,
     file = "~/repos/citsci/out/fig_8_9_regression.html")
 
 
-# proposition 4 #
 # proposition 5 #
 # delays and point system
 # ----------------#
