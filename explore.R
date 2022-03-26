@@ -251,30 +251,28 @@ plot(log(activity) ~ share_new, data = expact,
     pch = 20,
     xlab = "share new volunteers",
     ylab = "log(entries per day)")
-m_share = lm(log(activity) ~ share_new, data = exp)
+m_share = lm(log(activity) ~ share_new, data = expact)
 abline(m_share, col = 2)
-plot(log(activity) ~ log(experience), data = exp, 
+plot(log(activity) ~ log(experience), data = expact, 
     pch = 20,
     xlab = "log(average volunteer experience)",
     ylab = "log(entries per day)")
-m_exp = lm(log(activity) ~ log(experience), data = exp)
+m_exp = lm(log(activity) ~ log(experience), data = expact)
 abline(m_exp, col = 2)
 dev.off()
 
 m_exp2 = update(m_exp, . ~ . + as.numeric(start))
 mlist = list(m_share, m_exp, m_exp2)
-texreg::screenreg(mlist)
-lapply(mlist, lmtest::coeftest, vcov. = sandwich::vcovHC)
-lapply(mlist, function(x) sqrt(diag(sandwich::vcovHC(x))))
-# lapply(mlist, coeftest, vcov. = sandwich::vcovHC)
-
+cfs = lapply(mlist, lmtest::coeftest, vcov. = sandwich::vcovHC)
+ses = lapply(cfs, `[`, i=, j = 2)
+pvs = lapply(cfs, `[`, i=, j = 4)
+screenreg(mlist, override.se = ses, override.pval = pvs)
+htmlreg(mlist, override.se = ses, override.pval = pvs,
+    file = "~/repos/citsci/out/fig_4_regression.html")
 
 # proposition 2 #
 # ------------- #
 # volunteers stay with the same organisation and type of project
-
-# fixes to messy lijst (projecten does not have customer names)
-# in idxr and projecten but not in lijst
 
 # list of largest organisations
 fwrite(lijst[, .N, by = Klantnaam][order(-N)][1:10],
