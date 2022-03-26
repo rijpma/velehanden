@@ -150,15 +150,15 @@ delays = delays[,
     by = c("group", "project")]
 delays[, delay := difftime(date_checked, date_entered, units = "days")]
 
-# new variables
-# variable highlighting new users throughout their first project
-idxr[, new4project := any(newuser), by = list(gebruiker_id, project)]
-
 # new user variable
 setorder(idxr, aangemaakt_op)
 setorder(ctrl, aangemaakt_op)
 idxr[, newuser := !duplicated(gebruiker_id)]
 ctrl[, newuser := !duplicated(gebruiker_id)]
+
+# new variables
+# variable highlighting new users throughout their first project
+idxr[, new4project := any(newuser), by = list(gebruiker_id, project)]
 
 # new user shows up in project
 idxr[, newinproject := !duplicated(gebruiker_id), by = project]
@@ -299,7 +299,6 @@ example = example[, list(
     return = return,
     permuted = sample(org))]
 example[, return_permuted := duplicated(permuted), by = volunteer]
-knitr::kable(example)
 writeLines(knitr::kable(example, "html"), 
     "~/repos/citsci/out/table_a1_placebo_example.html")
 
@@ -386,19 +385,6 @@ toplot[, to := factor(to, levels = unique(to))]
 pdf("~/repos/citsci/out/fig_5_flows_org.pdf", width = 9)
 alluvial(toplot[, 1:2], freq = toplot$N, col = toplot$col, cw = 0.2, cex = 0.8)
 dev.off()
-
-# organisation size and retention
-toplot = idxr[!is.na(org), list(aangemaakt_op = min(aangemaakt_op)), by = list(project, org, largeorg, project_soort, nproj_byorg, gebruiker_id)]
-toplot = toplot[order(gebruiker_id, aangemaakt_op)]
-toplot = toplot[, 
-    list(
-        from = org, 
-        nfrom = nproj_byorg, 
-        to = shift(org)), 
-    by = gebruiker_id]
-toplot = toplot[!is.na(to) & nfrom > 1, list(.N, nfrom = unique(nfrom)), by = list(from, to)]
-toplot = toplot[, list(N[from == to] / sum(N), unique(nfrom)), by = list(from)]
-toplot[order(V1)]
 
 # proposition 3 #
 # ------------- # 
@@ -541,8 +527,8 @@ users_projects[gebruiker_id != 6694, sum(spent_points)] /
     idxr[, sum(punten_bij_invoeren) + sum(punten_bij_controle)]
 users_projects[gebruiker_id != 6694, sum(spent_points)] / users_projects[gebruiker_id != 6694, sum(saldo)]
 users_projects[gebruiker_id != 6694, sum(spent_points)] / users_projects[gebruiker_id != 6694, sum(saldo + spent_points)]
-
-idxr[gebruiker_id == 6694]
+# not in idxr
+# idxr[gebruiker_id == 6694]
 
 # how many points are at lease 1000 in one project
 idxr[, sum(punten_bij_invoeren + punten_bij_controle), by = list(gebruiker_id, project)][, mean(V1 > 1000)]
@@ -638,13 +624,12 @@ dev.off()
 
 # the peaks
 toplot = messages[!is.na(created_at), list(posts = .N), by = list(month = zoo::as.yearmon(created_at), project_id)]
-toplot[order(posts)]
-projecten[id == 242]
+# projecten[id == 242]
 # peak forums july 2017 is one project, surinam slavery registers
 
 toplot = idxr[, list(new_volunteers = sum(newuser)), by = list(month = zoo::as.yearmon(aangemaakt_op), project)]
 toplot[, monthtotal := sum(new_volunteers), by = month]
-toplot[order(new_volunteers), list(month, project, new_volunteers, new_volunteers / monthtotal)]
+# toplot[order(new_volunteers), list(month, project, new_volunteers, new_volunteers / monthtotal)]
 # peak new volunteers in nov 2011 is one project, militieregisters, then the
 # only project on platform. other peaks can typically also be linked to a
 # single project June 2017 (Slavery registers; 46%), May 2014 (WieWasWie
@@ -667,7 +652,7 @@ out = list(
     `Unique items entered:` = 
         idxr[, uniqueN(paste0(scan_id, project))]
 )
-fwrite(do.call(rbind, out),
+write.csv(do.call(rbind, out),
     "~/repos/citsci/out/size.csv")
 
 sumstatlist = list(
