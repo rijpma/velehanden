@@ -509,11 +509,13 @@ abline(m4, col = 2)
 dev.off()
 # maybe this should not be volunteer weekly but rather volunteer project? But this misses changes within the project
 
-lapply(list(m1, m3), lmtest::coeftest, vcov. = sandwich::vcovCL, cluster = ~ project_id)
-lapply(list(m2, m4), lmtest::coeftest, vcov. = sandwich::vcovHC)
-texreg::screenreg(list(m1, m2, m3, m4))
-texreg::texreg(list(m1, m2, m3, m4), 
-    file = "~/repos/citsci/out/correlations_delays.tex")
+mlist = list(m1, m2, m3, m4)
+cfs = lapply(mlist, lmtest::coeftest, vcov. = sandwich::vcovHC)
+ses = lapply(cfs, `[`, i=, j = 2)
+pvs = lapply(cfs, `[`, i=, j = 4)
+screenreg(mlist, override.se = ses, override.pval = pvs)
+htmlreg(mlist, override.se = ses, override.pval = pvs,
+    file = "~/repos/citsci/out/fig_8_9_regression.html")
 
 
 # proposition 4 #
