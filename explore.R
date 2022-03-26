@@ -205,39 +205,6 @@ new_volunteers[year(start) > 2011, weighted.mean(ratio_pre_existing_volunteers, 
 # list high share projects that are not small
 new_volunteers[ratio_new_volunteers > 0.8 & nvolunteers > 10 & year(start) > 2012, ]
 
-# calculate future activity of the average new v. average pre-existing volunteer
-
-newoldprop = idxr[year(aangemaakt_op) > 2011, 
-    list(
-        new = sum(N[new4project == TRUE]),
-        old = sum(N[new4project == FALSE]),
-        nvolunteers = uniqueN(gebruiker_id)),
-    by = list(project)]
-newoldprop[, total := old + new]
-newoldprop[, perc := old / total]
-
-pdf("~/repos/citsci/out/perc_by_new.pdf")
-mypar()
-hist(newoldprop$perc)
-dev.off()
-newoldprop[, mean(perc)]
-newoldprop[, weighted.mean(perc, nvolunteers)]
-
-newoldprop[, prop := old / new]
-newoldprop[!between(prop, 0.1, 10)]
-
-pdf("~/repos/citsci/out/new_old_volunteers_contributions.pdf")
-mypar()
-plot(new ~ old, 
-    data = newoldprop, 
-    log = "xy", 
-    xlab = "Input pre-existing volunteers", ylab = "Input new volunteers", 
-    pch = 20,
-    xlim = range(newoldprop[, list(old, new)] + 1),
-    ylim = range(newoldprop[, list(old, new)] + 1))
-# curve(2*x, add = TRUE)
-curve(1*x, add = TRUE)
-dev.off()
 
 # figure 3
 # pool of active/new volunteers at any time
