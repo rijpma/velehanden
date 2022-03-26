@@ -437,20 +437,6 @@ dev.off()
 
 quantile(na.omit(response_times$response_time) / 60, 1:10/10)
 
-pdf("~/repos/citsci/out/dens_weekly_response_times_bygroup.pdf")
-mypar()
-plot(density(log(as.numeric(response_times[!is.na(response_time), response_time]))), 
-    type = "n",
-    main = "Density plot of response times", xlab = "log(response time)")
-lines(density(log(as.numeric(response_times[!is.na(response_time) & group == "other", response_time]))), col = "black")
-lines(density(log(as.numeric(response_times[!is.na(response_time) & group == "group1", response_time]))), col = "red")
-lines(density(log(as.numeric(response_times[!is.na(response_time) & group == "group2", response_time]))), col = "blue")
-legend("topright", fill = c("black", "red", "blue"), legend = c("other", "group1", "group2"))
-dev.off()
-
-response_times[, mean(response_time, na.rm = TRUE) / 60 / 60, by = group]
-response_times[, median(response_time, na.rm = TRUE) / 60 / 60, by = group]
-
 # median response time because massive outliers
 pdf("~/repos/citsci/out/responsetimes_over_time.pdf")
 mypar()
