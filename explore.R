@@ -404,86 +404,10 @@ toplot[order(V1)]
 # ------------- # 
 # forum activity and project speed
 
-################ drop me do ###############
-
 proj_speed = idxr[, 
     list(scans_per_week = .N), 
     by = list(project, week = week(aangemaakt_op), year = year(aangemaakt_op))]
 proj_speed = projecten[, .(project_id = id, project = naam)][proj_speed, on = "project"]
-
-forum_activity = messages[, 
-    list(messages_per_week = .N,
-        volunteer_messages_per_week = sum(rol == "invoerder", na.rm = TRUE),
-        non_volunteer_messages_per_week = sum(rol != "invoerder", na.rm = TRUE)), 
-    by = list(project_id, week = week(created_at), year = year(created_at))]
-# nb: NAs are omitted
-
-toplot = merge(
-    x = proj_speed, 
-    y = forum_activity, 
-    by = c("project_id", "year", "week"))
-toplot[order(year, week), messages_last_week := shift(messages_per_week, type = "lag")]
-toplot[order(year, week), non_volunteer_messages_last_week := shift(non_volunteer_messages_per_week, type = "lag")]
-toplot = merge(toplot,
-    idxr[, list(project_volunteers = uniqueN(gebruiker_id)), by = project],
-    by = "project")
-toplot = merge(toplot,
-    messages[, list(forum_users = uniqueN(user_id)), by = project_id],
-    by = "project_id")
-
-toplot_proj = toplot[, 
-    list(total_scans = sum(scans_per_week), 
-        total_messages = sum(messages_per_week), 
-        nonvol_total_messages = sum(non_volunteer_messages_per_week, na.rm = TRUE), 
-        project_volunteers = project_volunteers[1], 
-        forum_users = forum_users[1]), 
-    by = project_id][, -"project_id"]
-
-pdf("~/repos/citsci/out/posts_scans_project.pdf", width = 9, height = 5)
-mypar(mfrow = c(1, 2))
-plot(log(total_scans) ~ log(total_messages), data = toplot_proj,
-    pch = 20, main = "All messages", 
-    xlab = "log(messages)", ylab = "log(entries)")
-m1 = lm(log(total_scans) ~ log(total_messages), data = toplot_proj)
-abline(m1, col = 2, lwd = 1.5)
-plot(log(total_scans) ~ log(nonvol_total_messages), data = toplot_proj[nonvol_total_messages > 0],
-    pch = 20, main = "Only non-volunteer messages", 
-    xlab = "log(messages)", ylab = "log(scans)")
-m2 = lm(log(total_scans) ~ log(nonvol_total_messages), data = toplot_proj[nonvol_total_messages > 0])
-abline(m2, col = 2, lwd = 1.5)
-dev.off()
-
-pdf("~/repos/citsci/out/posts_scans_weekly.pdf", width = 9, height = 5)
-mypar(mfrow = c(1, 2))
-plot(log(scans_per_week) ~ log(messages_per_week), data = toplot,
-    pch = 20, main = "All messages", 
-    xlab = "log(messages)", ylab = "log(entries)")
-m3 = lm(log(scans_per_week) ~ log(messages_per_week), data = toplot)
-abline(m3, col = 2, lwd = 1.5)
-plot(log(scans_per_week) ~ log(non_volunteer_messages_per_week), data = toplot,
-    pch = 20, main = "Only non-volunteer messages", 
-    xlab = "log(messages)", ylab = "log(scans)")
-m4 = lm(log(scans_per_week) ~ log(non_volunteer_messages_per_week), data = toplot[non_volunteer_messages_per_week > 0])
-abline(m4, col = 2, lwd = 1.5)
-dev.off()
-
-texreg(list(m1, m2, m3, m4), file = "~/repos/citsci/out/correlations.tex")
-
-pdf("~/repos/citsci/out/posts_scans_weekly_lagged.pdf", width = 9, height = 5)
-mypar(mfrow = c(1, 2))
-plot(log(scans_per_week) ~ log(messages_last_week), 
-    data = toplot, 
-    pch = 20)
-m5 = lm(log(scans_per_week) ~ log(messages_last_week), data = toplot)
-abline(m5, col = 2, lwd = 1.5)
-plot(log(scans_per_week) ~ log(non_volunteer_messages_last_week), 
-    data = toplot[non_volunteer_messages_last_week > 0], 
-    pch = 20)
-m6 = lm(log(scans_per_week) ~ log(non_volunteer_messages_last_week), 
-    data = toplot[non_volunteer_messages_last_week > 0])
-abline(m6, col = 2, lwd = 1.5)
-dev.off()
-
 
 messages[parent_id == "", parent_id := id]
 messages[, thread_length := .N, by = parent_id]
