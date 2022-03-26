@@ -27,6 +27,29 @@ mypar = function(...){
 lijst = readxl::read_xlsx("~/repos/citsci/Data1_projecten_9.xlsx",
     sheet = "Complete lijst")
 setDT(lijst)
+# corrections first
+lijst[Titel == "Zaanse briefhoofden", Naam := "zaa_index_bron"]
+lijst[Titel == "30 dagen op zee", Naam := "moei_index_30dagen"]
+lijst[Titel == "Nieuws! Lokale kronieken, 1500-1850", Naam := "vua_train_kronieken_transkribus"]
+lijst[Titel == "Nieuws! Lokale kronieken, 1500-1850", Klantnaam := "Universiteit Leiden"]
+
+# 4 projects but not in our data
+lijst = lijst[Klantnaam != "Tresoar"]
+
+# missing from lijst
+add = fread(
+   '"Naam"                            , "Klantnaam"
+    "amc"                             , "AMC"
+    "utr_index_bvr"                   , "Het Utrechts Archief"
+    "gda_index_huwelijk"              , "Gelders Archief"
+    "kem_index_dwaallichten"          , "Rijksarchief Antwerpen"
+    "sahm_index_bevolkingsregisters"  , "Streekarchief Hollands Midden"
+    "zaa_index_gaarder"               , "Gemeentearchief Zaanstad"')
+lijst = rbindlist(list(lijst, add), fill = TRUE)
+
+
+# drop because not in projecten and idxr
+lijst = lijst[!Naam %in% c("frl_bso_index", "unesco_tagging_photos")]
 
 projecten = fread("/Users/aukerijpma/data/citsci/20200210_portal_projecten.csv")
 projecten = projecten[naam != "naam"]
@@ -105,6 +128,17 @@ ctrl[, .N, by = .(project, scan_id)][, mean(N == 1)]
 idxr[order(aangemaakt_op), newuser := !duplicated(gebruiker_id)]
 ctrl[order(aangemaakt_op), newuser := !duplicated(gebruiker_id)]
 
+# merge org names into idxr
+setdiff(lijst$Naam, projecten$naam)
+setdiff(lijst$Naam, idxr$project)
+idxr = lijst[, list(Naam, Klantnaam)][idxr, on = c(Naam = "project")]
+setnames(idxr, "Naam", "project")
+setnames(idxr, "Klantnaam", "org")
+
+# merge project types into idxr
+idxr = projecten[, list(naam, project_soort)][idxr, on = c(naam = "project")]
+setnames(idxr, "naam", "project")
+
 # active user defined as "has contributed in past 6 months"
 half_year = (365.25 / 2) * 24 * 60 * 60 # in seconds
 idxr[order(aangemaakt_op), activeuser := aangemaakt_op - shift(aangemaakt_op) < half_year, by = gebruiker_id]
@@ -129,6 +163,18 @@ delays = delays[,
     by = c("group", "project")]
 delays[, delay := difftime(date_checked, date_entered, units = "days")]
 
+# new variables
+# variable highlighting new users throughout their first project
+idxr[, new4project := any(newuser), by = list(gebruiker_id, project)]
+
+# new user shows up in project
+setorder(idxr, aangemaakt_op)
+idxr[, newinproject := !duplicated(gebruiker_id), by = project]
+
+# experience measure (N projects )
+idxr[, experience := 1:.N, by = gebruiker_id]
+
+
 # proposition 1 #
 # ------------- #
 # share new volunteers by project
@@ -142,8 +188,9 @@ new_volunteers = idxr[,
     by = list(project)]
 new_volunteers[, ratio_pre_existing_volunteers := 1 - ratio_new_volunteers]
 
+# figure 2
 # distribution of shares new volunteers
-pdf("~/repos/citsci/out/new_volunteers_byproject.pdf")
+pdf("~/repos/citsci/out/fig_2_old_volunteers_byproject.pdf")
 mypar()
 hist(new_volunteers$ratio_pre_existing_volunteers, 
     xlab = "Share pre-existing volunteers in project", 
@@ -151,15 +198,13 @@ hist(new_volunteers$ratio_pre_existing_volunteers,
     main = "")
 dev.off()
 
-new_volunteers[year(start) > 2011, weighted.mean(ratio_new_volunteers, nvolunteers)]
+# overall averages
 new_volunteers[year(start) > 2011, weighted.mean(ratio_pre_existing_volunteers, nvolunteers)]
 
 # list high share projects that are not small
 new_volunteers[ratio_new_volunteers > 0.8 & nvolunteers > 10 & year(start) > 2012, ]
 
 # calculate future activity of the average new v. average pre-existing volunteer
-# first a variable highlighting new users throughout their first project
-idxr[, new4project := any(newuser), by = list(gebruiker_id, project)]
 
 newoldprop = idxr[year(aangemaakt_op) > 2011, 
     list(
@@ -193,14 +238,7 @@ plot(new ~ old,
 curve(1*x, add = TRUE)
 dev.off()
 
-toplot = new_volunteers[order(year), mean(V1), by = list(year)][as.numeric(year) >= 2012]
-pdf("~/repos/citsci/out/newvolunteers_overtime.pdf")
-mypar()
-plot(toplot, 
-    type = "b", col = "red", lwd = 1.5, pch = 20,
-    ylab = "Average share new volunteers")
-dev.off()
-
+# figure 3
 # pool of active/new volunteers at any time
 # since newuser has activeuser = false, is the -new really necessary? 
 
@@ -208,33 +246,27 @@ active_userpool = idxr[,
     list(active = uniqueN(gebruiker_id[activeuser == TRUE]), 
          new = uniqueN(gebruiker_id[newuser == TRUE])), 
     by = list(quarter = zoo::as.yearqtr(aangemaakt_op))]
-pdf("~/repos/citsci/out/activepool.pdf")
+pdf("~/repos/citsci/out/fig_3_activepool.pdf")
 mypar()
 plot(active_userpool[order(quarter), list(month = quarter, active - new)], 
     type = 'b', col = "red", lwd = 1.5, pch = 20,
     ylab = "N active, pre-existing volunteers")
 dev.off()
 
+# figure 4: 
 # experience and activity
 # user level
-setorder(idxr, aangemaakt_op)
-idxr[, newinproject := !duplicated(gebruiker_id), by = project]
-idxr[, experience := 1:.N, by = gebruiker_id]
-exp = idxr[, 
+expact = idxr[, 
     list(
         activity = .N / as.numeric(diff(range(as.Date(aangemaakt_op))) + 1),
         experience = experience[newinproject == TRUE]), # -1 but then no log :( 
     by = list(project, gebruiker_id)]
-plot(log(activity) ~ log(experience), data = exp)
-abline(lm(log(activity) ~ log(experience), data = exp), col = 2)
-summary(lm(log(activity) ~ log(experience), data = exp), col = 2)
 
-ggplot(exp, aes(log(experience), log(activity))) + geom_point() + geom_smooth() + theme_classic()
-
+out = ggplot(expact, aes(log(experience), log(activity))) + geom_point() + geom_smooth() + theme_classic()
 
 # but of course, this does not necessarily mean that there is no project-wide effect, because we know contributions can be very lopsided
 # so once more, but to the project level
-exp = idxr[year(aangemaakt_op) > 2011, 
+expact = idxr[year(aangemaakt_op) > 2011, 
     list(
         start = min(aangemaakt_op),
         share_new = sum(newuser) / uniqueN(gebruiker_id),
@@ -243,11 +275,11 @@ exp = idxr[year(aangemaakt_op) > 2011,
         # so we look at experience of first 50% of users
         # -1 but then no log :( 
     by = list(project)]
-# 
 
-pdf("~/repos/citsci/out/experience_activity_proj.pdf", width = 9, height = 5)
+
+pdf("~/repos/citsci/out/fig_4_experience_activity_proj.pdf", width = 9, height = 5)
 mypar(mfrow = c(1, 2))
-plot(log(activity) ~ share_new, data = exp, 
+plot(log(activity) ~ share_new, data = expact, 
     pch = 20,
     xlab = "share new volunteers",
     ylab = "log(entries per day)")
@@ -271,52 +303,14 @@ lapply(mlist, function(x) sqrt(diag(sandwich::vcovHC(x))))
 
 # proposition 2 #
 # ------------- #
-# volunteers stay with the same organisation
-# and
-# proposition 3 #
-# ------------- # 
-# volunteers stay with the same type of project
+# volunteers stay with the same organisation and type of project
 
 # fixes to messy lijst (projecten does not have customer names)
 # in idxr and projecten but not in lijst
-# corrections first
-lijst[Titel == "Zaanse briefhoofden", Naam := "zaa_index_bron"]
-lijst[Titel == "30 dagen op zee", Naam := "moei_index_30dagen"]
-lijst[Titel == "Nieuws! Lokale kronieken, 1500-1850", Naam := "vua_train_kronieken_transkribus"]
-lijst[Titel == "Nieuws! Lokale kronieken, 1500-1850", Klantnaam := "Universiteit Leiden"]
-
-# 4 projects but not in our data
-lijst = lijst[Klantnaam != "Tresoar"]
-
-# missing from lijst
-add = fread(
-   '"Naam"                            , "Klantnaam"
-    "amc"                             , "AMC"
-    "utr_index_bvr"                   , "Het Utrechts Archief"
-    "gda_index_huwelijk"              , "Gelders Archief"
-    "kem_index_dwaallichten"          , "Rijksarchief Antwerpen"
-    "sahm_index_bevolkingsregisters"  , "Streekarchief Hollands Midden"
-    "zaa_index_gaarder"               , "Gemeentearchief Zaanstad"')
-lijst = rbindlist(list(lijst, add), fill = TRUE)
 
 # list of largest organisations
 fwrite(lijst[, .N, by = Klantnaam][order(-N)][1:10],
     "~/repos/citsci/out/organisation.csv")
-
-setdiff(lijst$Naam, projecten$naam)
-setdiff(lijst$Naam, idxr$project)
-
-# drop because not in projecten and idxr
-lijst = lijst[!Naam %in% c("frl_bso_index", "unesco_tagging_photos")]
-
-# merge org names into idxr
-idxr = lijst[, list(Naam, Klantnaam)][idxr, on = c(Naam = "project")]
-setnames(idxr, "Naam", "project")
-setnames(idxr, "Klantnaam", "org")
-
-# merge project types into idxr
-idxr = projecten[, list(naam, project_soort)][idxr, on = c(naam = "project")]
-setnames(idxr, "naam", "project")
 
 # calculate the expected number based on random project draw by permuting projects first
 vpo = idxr[!is.na(org), 
@@ -325,7 +319,7 @@ vpo = idxr[!is.na(org),
 vpo = vpo[order(gebruiker_id, aangemaakt_op)]
 # should we do something about from == 1 not making sense? No, because this is tricky here and the placebo thing should take care of it
 
-# example table
+# table A1 - example table
 set.seed(321)
 vpo[, uniqueN(org), by = gebruiker_id][order(V1)]
 vpo[, prob_org := .N / nrow(vpo), by = org]
@@ -341,7 +335,7 @@ example = example[, list(
 example[, return_permuted := duplicated(permuted), by = volunteer]
 knitr::kable(example)
 writeLines(knitr::kable(example, "html"), 
-    "~/repos/citsci/out/placebo_example.html")
+    "~/repos/citsci/out/table_a1_placebo_example.html")
 
 # some sort of inverse weight to add up?
 vpo[, invweight := 1 / uniqueN(project), by = org]
@@ -351,6 +345,7 @@ set.seed(7/4)
 vpo[, placeboorg := sample(org)] # this accounts for the number of volunteers, but not the number of scans
 vpo[, placebotype := sample(project_soort)] # this accounts for the number of volunteers, but not the number of scans
 
+# figure 6
 vpo = vpo[, list(
         nproj = .N, 
         same_org = mean(duplicated(org)),
@@ -369,7 +364,7 @@ vpo = vpo[, list(
         placebo_type_mix = uniqueN(project_soort) / .N), 
     by = gebruiker_id]
 
-pdf("~/repos/citsci/out/returns.pdf", width = 9, height = 5)
+pdf("~/repos/citsci/out/fig_6_returns.pdf", width = 9, height = 5)
 mypar(mfrow = c(1, 2))
 
 plot(vpo[, .N, by = floor(same_org * 10) / 10][order(floor)], 
@@ -389,44 +384,22 @@ lines(vpo[, .N, by = floor(same_placebo_org_direct * 10) / 10][order(floor)],
     col = 2, lwd = 1.5, type = 'o', pch = 19)
 
 legend("topright", fill = 1:2, legend = c("Actual", "Baseline"))
-
-# plot(vpo[, .N, by = floor(same_type * 10) / 10][order(floor)], 
-#     main = "Returns to project type",
-#     xlab = "Share of volunteers' projects",
-#     lwd = 1.5, log = 'y', , type = 'o', pch = 19)
-# lines(vpo[, .N, by = floor(same_placebo_type * 10) / 10][order(floor)], 
-#     col = 'red', lwd = 1.5, type = 'o', pch = 19)
-
-# plot(vpo[, .N, by = floor(same_type_direct * 10) / 10][order(floor)], 
-#     main = "Direct returns to project type",
-#     xlab = "Share of volunteers' projects",
-#     ylab = "",
-#     lwd = 1.5, log = 'y', , type = 'o', pch = 19)
-# lines(vpo[, .N, by = floor(same_placebo_type_direct * 10) / 10][order(floor)], 
-#     col = 'red', lwd = 1.5, type = 'o', pch = 19)
 dev.off()
 
 mean(vpo[nproj > 1, same_org])
-mean(vpo[nproj > 1, same_org_wgt])
 mean(vpo[nproj > 1, same_placebo_org])
 t.test(vpo[nproj > 1, same_org], vpo[nproj > 1, same_placebo_org])
+
 mean(vpo[nproj > 1, same_org_direct])
 mean(vpo[nproj > 1, same_placebo_org_direct])
 t.test(vpo[nproj > 1, same_org_direct], vpo[nproj > 1, same_placebo_org_direct])
-mean(vpo[nproj > 1, same_type])
-mean(vpo[nproj > 1, same_placebo_type])
-t.test(vpo[nproj > 1, same_type], vpo[nproj > 1, same_placebo_type])
-mean(vpo[nproj > 1, same_type_direct])
-mean(vpo[nproj > 1, same_placebo_type_direct])
-t.test(vpo[nproj > 1, same_type_direct], vpo[nproj > 1, same_placebo_type_direct])
 
-idxr[, uniqueN(project), by = org][order(V1)]
+# figure 5 flows between organisations
 idxr[, nproj_byorg := uniqueN(project), by = org]
 idxr[, largeorg := ifelse(org %in% c("Het Utrechts Archief",
         "Brabants Historisch Informatie Centrum",
         "Stadsarchief Amsterdam",
         "Westfries Archief",
-        "Archief Eemland",
         "Regionaal Archief Nijmegen"),
     org, "other")]
 toplot = idxr[!is.na(org), list(aangemaakt_op = min(aangemaakt_op)), by = list(project, org, largeorg, project_soort, nproj_byorg, gebruiker_id)]
@@ -438,12 +411,13 @@ toplot = toplot[,
         to = shift(largeorg)), 
     by = gebruiker_id]
 toplot = toplot[!is.na(to) & nfrom > 1, .N, by = list(from, to)]
+toplot = toplot[order(N)]
 toplot[, col := RColorBrewer::brewer.pal(uniqueN(from), "Paired")[as.factor(from)]]
 toplot = toplot[order(-N)]
 toplot[, from := factor(from, levels = unique(from))]
 toplot[, to := factor(to, levels = unique(to))]
 
-pdf("~/repos/citsci/out/flows_org.pdf", width = 9)
+pdf("~/repos/citsci/out/fig_5_flows_org.pdf", width = 9)
 alluvial(toplot[, 1:2], freq = toplot$N, col = toplot$col, cw = 0.2, cex = 0.8)
 dev.off()
 
@@ -460,9 +434,11 @@ toplot = toplot[!is.na(to) & nfrom > 1, list(.N, nfrom = unique(nfrom)), by = li
 toplot = toplot[, list(N[from == to] / sum(N), unique(nfrom)), by = list(from)]
 toplot[order(V1)]
 
-# proposition 4 #
+# proposition 3 #
 # ------------- # 
 # forum activity and project speed
+
+################ drop me do ###############
 
 proj_speed = idxr[, 
     list(scans_per_week = .N), 
@@ -542,9 +518,7 @@ m6 = lm(log(scans_per_week) ~ log(non_volunteer_messages_last_week),
 abline(m6, col = 2, lwd = 1.5)
 dev.off()
 
-# proposition 5 #
-# ------------- #
-# response times
+
 messages[parent_id == "", parent_id := id]
 messages[, thread_length := .N, by = parent_id]
 messages[, mean(thread_length == 1)]
@@ -560,7 +534,7 @@ response_times = projecten[, .(project_id, naam)][response_times, on = "project_
 response_times[, group := ifelse(naam %in% ..group1, "group1", "other")]
 response_times[, group := ifelse(naam %in% ..group2, "group2", group)]
 
-pdf("~/repos/citsci/out/hist_weekly_response_times.pdf")
+pdf("~/repos/citsci/out/fig_7_hist_weekly_response_times.pdf")
 mypar()
 hist(log10(as.numeric(response_times$response_time) / 3600), 
     axes = FALSE,
@@ -597,6 +571,7 @@ dev.off()
 # before after break (hours)
 response_times[!is.na(first_response), median(response_time / 3600, na.rm = TRUE), by = zoo::as.yearmon(first_response) > 2016.6][order(zoo)]
 
+# figure 8, response times and activity
 toplot_forum = response_times[, 
     list(mean_response_time = mean(as.numeric(response_time) / 60 / 60)), 
     by = list(project_id, week = week(first_response), year = year(first_response))]
@@ -614,7 +589,7 @@ toplot_entry = proj_speed[toplot_entry, on = c("project", "week", "year")]
 toplot_entry_proj = toplot_entry[, list(scans = sum(scans_per_week, na.rm = TRUE), mean_check_time = mean(mean_check_time)),
     by = project]
 
-pdf("~/repos/citsci/out/forumdelays_activity.pdf", height = 5, width = 9)
+pdf("~/repos/citsci/out/fig_8_forumdelays_activity.pdf", height = 5, width = 9)
 mypar(mfrow = c(1, 2))
 plot(log(scans_per_week) ~ log(mean_response_time), 
     data = toplot_forum, 
@@ -634,7 +609,8 @@ m2 = lm(log(scans) ~ log(mean_response_time), data = toplot_forum_proj[,-"projec
 abline(m2, col = 2)
 dev.off()
 
-pdf("~/repos/citsci/out/checkdelays_activity.pdf", height = 5, width = 9)
+# figure 8
+pdf("~/repos/citsci/out/fig_9_checkdelays_activity.pdf", height = 5, width = 9)
 mypar(mfrow = c(1, 2))
 plot(log(scans_per_week) ~ log(mean_check_time), 
     data = toplot_entry, 
@@ -663,11 +639,9 @@ texreg::screenreg(list(m1, m2, m3, m4))
 texreg::texreg(list(m1, m2, m3, m4), 
     file = "~/repos/citsci/out/correlations_delays.tex")
 
-# do controleurs also have different roles?
-users_projects[, list(nroles = uniqueN(rol)), by = gebruiker_id][, sum(nroles > 1)]
-length(intersect(idxr$gebruiker_id, ctrl$gebruiker_id))
 
-# proposition 6/7 #
+# proposition 4 #
+# proposition 5 #
 # delays and point system
 # ----------------#
 projecten[, incentive := punten_bij_controle / punten_bij_invoeren]
@@ -732,7 +706,7 @@ x[, mean(between(V1.x / V1.y, 0.8, 1.2), na.rm = TRUE)]
     # autocontrole
     # incentives from table
 toplot_entry = projecten[, list(project = naam, project_id, has_coupons, has_coupon_create, has_transactions, punten_bij_invoeren, punten_bij_controle, incentive)][toplot_entry, on = c("project")]
-pdf("~/repos/citsci/out/delays_activity_bypoints.pdf", width = 9, height = 5)
+pdf("~/repos/citsci/out/fig_10_delays_activity_bypoints.pdf", width = 9, height = 5)
 mypar(mfrow = c(1, 2))
 plot(log(scans_per_week) ~ log(mean_check_time), 
     data = toplot_entry, type = "n", 
@@ -758,11 +732,12 @@ abline(m2, col = 2, lwd = 1.5)
 dev.off()
 
 pdf("~/repos/citsci/out/delays_activity_bypointscreation.pdf", width = 9, height = 5)
+mypar(mfrow = c(1, 2))
 plot(log(scans_per_week) ~ log(mean_check_time), 
     data = toplot_entry, type = "n", main = "No coupons creation")
 points(log(scans_per_week) ~ log(mean_check_time), 
     data = toplot_entry[has_coupon_create == 0],
-    pch = 2-)
+    pch = 20)
 m3 = lm(log(scans_per_week) ~ log(mean_check_time), data = toplot_entry[has_coupon_create == 0])
 abline(m3, col = 2, lwd = 1.5)
 
@@ -787,7 +762,7 @@ texreg::texreg(list(m1, m2),
 # preliminaries #
 # ------------- #
 # basic development of platform
-pdf("~/repos/citsci/out/platformoverall.pdf", height = 9)
+pdf("~/repos/citsci/out/fig_1_platformoverall.pdf", height = 9)
 
 mypar(mfrow = c(3, 2))
 
@@ -828,15 +803,22 @@ toplot[order(new_volunteers), list(month, project, new_volunteers, new_volunteer
 # typically also be linked to a single project 
 
 # summary statistics #
-
-projecten[naam != "demo", .N, by = status]
-idxr[project != "demo", range(aangemaakt_op)]
-idxr[project != "demo", uniqueN(org)]
-lijst[Naam != "demo", uniqueN(Klantnaam)]
-idxr[, uniqueN(gebruiker_id)]
-idxr[, uniqueN(paste0(scan_id, project))]
-# or
-nrow(idxr) + nrow(ctrl)
+out = list(
+    `Number of public projects on VH since 2011, June 20 (start platform):` = 
+        projecten[naam != "demo", uniqueN(project_id)],
+    `Number of completed projects by 2020, February 11:` = 
+        projecten[naam != "demo" & status == "afgerond", uniqueN(project_id)],
+    `Number of unique organizations using VH:` = 
+        lijst[, uniqueN(Klantnaam)],
+    `Number of active volunteers:` = 
+        idxr[, uniqueN(gebruiker_id)],
+    `Number of items entered:` =
+        nrow(idxr) + nrow(ctrl),
+    `Unique items entered:` = 
+        idxr[, uniqueN(paste0(scan_id, project))]
+)
+fwrite(do.call(rbind, out),
+    "~/repos/citsci/out/size.csv")
 
 sumstatlist = list(
     volunteers = idxr[, uniqueN(gebruiker_id), by = project][,
