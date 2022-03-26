@@ -108,8 +108,6 @@ ctrl = ctrl[, .N, , by = list(project, scan_id, gebruiker_id, aangemaakt_op)]
 idxr[, aangemaakt_op := anytime::anytime(aangemaakt_op)]
 ctrl[, aangemaakt_op := anytime::anytime(aangemaakt_op)]
 
-setorder(idxr, project, scan_id, aangemaakt_op)
-setorder(ctrl, project, scan_id, aangemaakt_op)
 
 # two groups of outreach-heavy projects
 group1 = projecten[id %in% c(208, 37, 22), naam]
@@ -124,10 +122,6 @@ idxr[project %in% group2, group := paste0("g2_", project)]
 idxr[, .N, by = .(project, scan_id)][, mean(N == 1)]
 ctrl[, .N, by = .(project, scan_id)][, mean(N == 1)]
 
-# new user variable
-idxr[order(aangemaakt_op), newuser := !duplicated(gebruiker_id)]
-ctrl[order(aangemaakt_op), newuser := !duplicated(gebruiker_id)]
-
 # merge org names into idxr
 setdiff(lijst$Naam, projecten$naam)
 setdiff(lijst$Naam, idxr$project)
@@ -138,13 +132,6 @@ setnames(idxr, "Klantnaam", "org")
 # merge project types into idxr
 idxr = projecten[, list(naam, project_soort)][idxr, on = c(naam = "project")]
 setnames(idxr, "naam", "project")
-
-# active user defined as "has contributed in past 6 months"
-half_year = (365.25 / 2) * 24 * 60 * 60 # in seconds
-idxr[order(aangemaakt_op), activeuser := aangemaakt_op - shift(aangemaakt_op) < half_year, by = gebruiker_id]
-ctrl[order(aangemaakt_op), activeuser := aangemaakt_op - shift(aangemaakt_op) < half_year, by = gebruiker_id]
-idxr[is.na(activeuser), activeuser := FALSE] # is this correct?
-ctrl[is.na(activeuser), activeuser := FALSE]
 
 # calculate delays to controle
 delays = merge(
@@ -167,13 +154,27 @@ delays[, delay := difftime(date_checked, date_entered, units = "days")]
 # variable highlighting new users throughout their first project
 idxr[, new4project := any(newuser), by = list(gebruiker_id, project)]
 
-# new user shows up in project
+# new user variable
 setorder(idxr, aangemaakt_op)
+setorder(ctrl, aangemaakt_op)
+idxr[, newuser := !duplicated(gebruiker_id)]
+ctrl[, newuser := !duplicated(gebruiker_id)]
+
+# new user shows up in project
 idxr[, newinproject := !duplicated(gebruiker_id), by = project]
 
 # experience measure (N projects )
 idxr[, experience := 1:.N, by = gebruiker_id]
 
+setorder(idxr, project, scan_id, aangemaakt_op)
+setorder(ctrl, project, scan_id, aangemaakt_op)
+
+# active user defined as "has contributed in past 6 months"
+half_year = (365.25 / 2) * 24 * 60 * 60 # in seconds
+idxr[order(aangemaakt_op), activeuser := aangemaakt_op - shift(aangemaakt_op) < half_year, by = gebruiker_id]
+ctrl[order(aangemaakt_op), activeuser := aangemaakt_op - shift(aangemaakt_op) < half_year, by = gebruiker_id]
+idxr[is.na(activeuser), activeuser := FALSE] # is this correct?
+ctrl[is.na(activeuser), activeuser := FALSE]
 
 # proposition 1 #
 # ------------- #
