@@ -623,11 +623,11 @@ toplot[order(posts)]
 dev.off()
 
 # the peaks
-toplot = messages[!is.na(created_at), list(posts = .N), by = list(month = zoo::as.yearmon(created_at), project_id)]
+# toplot = messages[!is.na(created_at), list(posts = .N), by = list(month = zoo::as.yearmon(created_at), project_id)]
 # projecten[id == 242]
 # peak forums july 2017 is one project, surinam slavery registers
 
-toplot = idxr[, list(new_volunteers = sum(newuser)), by = list(month = zoo::as.yearmon(aangemaakt_op), project)]
+# toplot = idxr[, list(new_volunteers = sum(newuser)), by = list(month = zoo::as.yearmon(aangemaakt_op), project)]
 toplot[, monthtotal := sum(new_volunteers), by = month]
 # toplot[order(new_volunteers), list(month, project, new_volunteers, new_volunteers / monthtotal)]
 # peak new volunteers in nov 2011 is one project, militieregisters, then the
@@ -685,8 +685,8 @@ sumstatlist = list(
             list(min = min(N), median = median(N), mean =  mean(N), max = max(N))],
     response_times = response_times[!is.na(response_time), mean(as.numeric(response_time)), by = project_id][, 
             list(min = min(V1), median = median(V1), mean =  mean(V1), max = max(V1))] / 60 / 60
-    )
 )
+
 out = rbindlist(sumstatlist, idcol = "stat", use.names = TRUE, fill = TRUE)
 writeLines(
     knitr::kable(out, digits = 2, format = "html"),
