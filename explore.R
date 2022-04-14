@@ -1,9 +1,9 @@
 setwd("~/data/citsci")
 
 library("data.table")
+library("zoo")
 library("stringi")
 library("anytime")
-library("ggplot2")
 library("readxl")
 library("texreg")
 library("alluvial")
@@ -90,11 +90,11 @@ idxr$`20200211_brd_indexeer_data.csv` =
     idxr$`20200211_brd_indexeer_data.csv`[, .(gebruiker_id, scan_id, aangemaakt_op)]
 
 # simplify names of data sets
-names(idxr) = stri_replace_all_regex(names(idxr), "_indexeer_data\\.csv", "")
-names(idxr) = stri_replace_all_regex(names(idxr), "^\\d+_", "")
+names(idxr) = stringi::stri_replace_all_regex(names(idxr), "_indexeer_data\\.csv", "")
+names(idxr) = stringi::stri_replace_all_regex(names(idxr), "^\\d+_", "")
 
-names(ctrl) = stri_replace_all_regex(names(ctrl), "_controle_data\\.csv", "")
-names(ctrl) = stri_replace_all_regex(names(ctrl), "^\\d+_", "")
+names(ctrl) = stringi::stri_replace_all_regex(names(ctrl), "_controle_data\\.csv", "")
+names(ctrl) = stringi::stri_replace_all_regex(names(ctrl), "^\\d+_", "")
 
 # list to dataset
 idxr = rbindlist(idxr, use.names = TRUE, idcol = "project")
