@@ -410,6 +410,7 @@ response_times = projecten[, .(project_id, naam)][response_times, on = "project_
 response_times[, group := ifelse(naam %in% ..group1, "group1", "other")]
 response_times[, group := ifelse(naam %in% ..group2, "group2", group)]
 
+# figure 7
 pdf("~/repos/citsci/out/fig_7_hist_weekly_response_times.pdf")
 mypar()
 hist(log10(as.numeric(response_times$response_time) / 3600), 
@@ -454,22 +455,30 @@ toplot_entry_proj = toplot_entry[, list(scans = sum(scans_per_week, na.rm = TRUE
 # figure 8
 pdf("~/repos/citsci/out/fig_8_forumdelays_activity.pdf", height = 5, width = 9)
 mypar(mfrow = c(1, 2))
-plot(log(scans_per_week) ~ log(mean_response_time), 
+plot(log10(scans_per_week) ~ log10(mean_response_time), 
     data = toplot_forum, 
     pch = 20,
-    xlab = "log(mean response time (hours))",
-    ylab = "log(scans per week)",
+    axes = FALSE,
+    xlab = "mean response time (hours)",
+    ylab = "scans per week",
     main = "Forum responses and activity (volunteer)")
-m1 = lm(log(scans_per_week) ~ log(mean_response_time), data = toplot_forum)
+# use log10 to mimic "log=xy" in plot
+m1 = lm(log10(scans_per_week) ~ log10(mean_response_time), data = toplot_forum)
 abline(m1, col = 2)
-plot(log(scans) ~ log(mean_response_time), 
+axis(1, at = -4:4, labels = 10^(-4:4))
+axis(2, at = -4:4, labels = 10^(-4:4))
+
+plot(log10(scans) ~ log10(mean_response_time), 
     data = toplot_forum_proj[,-"project_id"], 
     pch = 20,
-    xlab = "log(mean response time hours)",
-    ylab = "log(scans per week)",
+    axes = FALSE,
+    xlab = "mean response time hours",
+    ylab = "scans per week",
     main = "Forum responses and activity (project)")
-m2 = lm(log(scans) ~ log(mean_response_time), data = toplot_forum_proj[,-"project_id"])
+m2 = lm(log10(scans) ~ log10(mean_response_time), data = toplot_forum_proj[,-"project_id"])
 abline(m2, col = 2)
+axis(1, at = 0:6, labels = 10^(0:6))
+axis(2, at = 0:6, labels = 10^(0:6))
 dev.off()
 
 
@@ -479,24 +488,31 @@ dev.off()
 # figure 9
 pdf("~/repos/citsci/out/fig_9_checkdelays_activity.pdf", height = 5, width = 9)
 mypar(mfrow = c(1, 2))
-plot(log(scans_per_week) ~ log(mean_check_time), 
+plot(log10(scans_per_week) ~ log10(mean_check_time), 
     data = toplot_entry, 
     pch = 20,
-    xlab = "log(mean response time (hours))",
-    ylab = "log(scans per week)",
+    axes = FALSE,
+    xlab = "mean response time (hours)",
+    ylab = "scans per week",
     main = "Entry checks and activity (volunteer)")
-m3 = lm(log(scans_per_week) ~ log(mean_check_time), data = toplot_entry)
+m3 = lm(log10(scans_per_week) ~ log10(mean_check_time), data = toplot_entry)
 abline(m3, col = 2)
+axis(1, at = -2:5, labels = 10^(-2:5))
+axis(2, at = -2:5, labels = 10^(-2:5))
+
 # is there an issue here in the sense that if a user does 1000 scans and the project takes a year, than this places some limit on how slow it can be checked
 # ie we're estimate N/week = time, so does this introduce an artificial relationship of the kind x 1/x?
-plot(log(scans) ~ log(mean_check_time), 
+plot(log10(scans) ~ log10(mean_check_time), 
     data = toplot_entry_proj, 
     pch = 20,
-    xlab = "log(mean response time (hours))",
-    ylab = "log(scans per week)",
+    axes = FALSE,
+    xlab = "mean response time (hours)",
+    ylab = "scans per week",
     main = "Entry checks and activity (project)")
-m4 = lm(log(scans) ~ log(mean_check_time), data = toplot_entry_proj)
+m4 = lm(log10(scans) ~ log10(mean_check_time), data = toplot_entry_proj)
 abline(m4, col = 2)
+axis(1, at = 1:6, labels = 10^(1:6))
+axis(2, at = 1:6, labels = 10^(1:6))
 dev.off()
 # maybe this should not be volunteer weekly but rather volunteer project? But this misses changes within the project
 
@@ -564,27 +580,33 @@ dev.off()
 toplot_entry = projecten[, list(project = naam, project_id, has_coupons, has_coupon_create, has_transactions, punten_bij_invoeren, punten_bij_controle, incentive)][toplot_entry, on = c("project")]
 pdf("~/repos/citsci/out/fig_10_delays_activity_bypoints.pdf", width = 9, height = 5)
 mypar(mfrow = c(1, 2))
-plot(log(scans_per_week) ~ log(mean_check_time), 
+plot(log10(scans_per_week) ~ log10(mean_check_time), 
     data = toplot_entry, type = "n", 
-    xlab = "log(mean check time (hours))",
-    ylab = "log(scans per week)",
+    axes = FALSE,
+    xlab = "mean check time (hours)",
+    ylab = "scans per week",
     main = "No coupons")
-points(log(scans_per_week) ~ log(mean_check_time), 
+points(log10(scans_per_week) ~ log10(mean_check_time), 
     pch = 20,
     data = toplot_entry[has_coupons == 0])
-m1 = lm(log(scans_per_week) ~ log(mean_check_time), data = toplot_entry[has_coupons == 0])
-abline(m1, col = 2, lwd = 1.5)
+m1 = lm(log10(scans_per_week) ~ log10(mean_check_time), data = toplot_entry[has_coupons == 0])
+abline(m1, col = 2, lwd = 1.5, untf = TRUE)
+axis(1, at = -2:5, labels = 10^(-2:5))
+axis(2, at = -2:5, labels = 10^(-2:5))
 
-plot(log(scans_per_week) ~ log(mean_check_time), 
+plot(log10(scans_per_week) ~ log10(mean_check_time), 
     data = toplot_entry, type = "n" , 
-    xlab = "log(mean check time (hours))",
-    ylab = "log(scans per week)",
+    axes = FALSE,
+    xlab = "mean check time (hours)",
+    ylab = "scans per week",
     main = "Coupons")
-points(log(scans_per_week) ~ log(mean_check_time), 
+points(log10(scans_per_week) ~ log10(mean_check_time), 
     data = toplot_entry[has_coupons == 1],
     pch = 20)
-m2 = lm(log(scans_per_week) ~ log(mean_check_time), data = toplot_entry[has_coupons == 1])
+m2 = lm(log10(scans_per_week) ~ log10(mean_check_time), data = toplot_entry[has_coupons == 1])
 abline(m2, col = 2, lwd = 1.5)
+axis(1, at = -2:5, labels = 10^(-2:5))
+axis(2, at = -2:5, labels = 10^(-2:5))
 dev.off()
 
 mlist = list(m1, m2)
