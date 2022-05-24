@@ -8,6 +8,9 @@ library("readxl")
 library("texreg")
 library("alluvial")
 library("RColorBrewer")
+library("lmtest")
+library("knitr")
+library("sandwich")
 
 data.table::setDTthreads(2)
 
