@@ -250,16 +250,23 @@ pdf("~/repos/citsci/out/fig_4_experience_activity_proj.pdf", width = 9, height =
 mypar(mfrow = c(1, 2))
 plot(log(activity) ~ share_new, data = expact, 
     pch = 20,
+    axes = FALSE,
     xlab = "share new volunteers",
     ylab = "log(entries per day)")
 m_share = lm(log(activity) ~ share_new, data = expact)
 abline(m_share, col = 2)
+axis(1)
+axis(2, at = log(10^(0:5)), labels = 10^(0:5))
+
 plot(log(activity) ~ log(experience), data = expact, 
     pch = 20,
+    axes = FALSE,
     xlab = "log(average volunteer experience)",
     ylab = "log(entries per day)")
 m_exp = lm(log(activity) ~ log(experience), data = expact)
 abline(m_exp, col = 2)
+axis(1, at = log(10^(0:5)), labels = 10^(0:5))
+axis(2, at = log(10^(0:5)), labels = 10^(0:5))
 dev.off()
 
 m_exp2 = update(m_exp, . ~ . + as.numeric(start))
