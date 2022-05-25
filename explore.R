@@ -210,18 +210,16 @@ new_volunteers[ratio_new_volunteers > 0.8 & nvolunteers > 10 & year(start) > 201
 
 
 # figure 3
-# pool of active/new volunteers at any time
-# since newuser has activeuser = false, is the -new really necessary? 
-
-active_userpool = idxr[, 
-    list(active = uniqueN(gebruiker_id[activeuser == TRUE]), 
-         new = uniqueN(gebruiker_id[newuser == TRUE])), 
-    by = list(quarter = zoo::as.yearqtr(aangemaakt_op))]
-pdf("~/repos/citsci/out/fig_3_activepool.pdf")
+# share output by new volunteers
+toplot = idxr[, 
+    share_by_new = mean(new4project), 
+    by = list(ym = zoo::as.yearmon(aangemaakt_op))]
+pdf("~/repos/citsci/out/fig_3_sharebynew.pdf")
 mypar()
-plot(active_userpool[order(quarter), list(month = quarter, active - new)], 
+plot(toplot[order(ym)],
     type = 'b', col = "red", lwd = 1.5, pch = 20,
-    ylab = "N active, pre-existing volunteers")
+    xlab = "year",
+    ylab = "share entries")
 dev.off()
 
 # figure 4: 
