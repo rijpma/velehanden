@@ -251,7 +251,7 @@ new_volunteers[ratio_new_volunteers > 0.8 & nvolunteers > 10 & year(start) > 201
 # figure 3
 # share output by new volunteers
 toplot = idxr[, 
-    share_by_new = mean(new4project), 
+    list(share_by_new = mean(new4project)), 
     by = list(ym = zoo::as.yearmon(aangemaakt_op))]
 pdf("~/repos/citsci/out/fig_3_sharebynew.pdf")
 mypar()
