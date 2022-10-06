@@ -627,27 +627,38 @@ htmlreg(mlist, override.se = ses, override.pval = pvs,
 
 # preliminaries #
 # ------------- #
+# Figure 1
 # basic development of platform
 pdf("~/repos/citsci/out/fig_1_platformoverall.pdf", height = 9)
 
 mypar(mfrow = c(3, 2))
 
 toplot = idxr[, list(scans = sum(N)), by = list(month = zoo::as.yearmon(aangemaakt_op))]
-plot(toplot[order(month)], type = 'b',pch = 20, col = 2, main = "Scans")
+plot(toplot[order(month)], type = 'b',pch = 20, col = 2, 
+    main = "Scans",
+    ylab = "Number of scans", xlab = "Year")
 
 toplot = idxr[, list(projects = uniqueN(project)), by = list(month = zoo::as.yearmon(aangemaakt_op))]
-plot(toplot[order(month)], type = 'b',pch = 20, col = 2, main = "Active projects")
+plot(toplot[order(month)], type = 'b',pch = 20, col = 2, 
+    main = "Active projects",
+    ylab = "Number of projects", xlab = "Year")
 
 # one of these two should not have "scans" as the y-axis
 toplot = idxr[, list(new_volunteers = sum(newuser)), by = list(month = zoo::as.yearmon(aangemaakt_op))]
-plot(toplot[order(month)], type = 'b',pch = 20, col = 2, main = "New volunteers")
+plot(toplot[order(month)], type = 'b',pch = 20, col = 2, 
+    main = "New volunteers",
+    ylab = "Number of new volunteers", xlab = "Year")
 toplot[order(new_volunteers)]
 
 toplot = idxr[, list(active_volunteers = uniqueN(gebruiker_id)), by = list(month = zoo::as.yearmon(aangemaakt_op))]
-plot(toplot[order(month)], type = 'b',pch = 20, col = 2, main = "Active volunteers")
+plot(toplot[order(month)], type = 'b',pch = 20, col = 2, 
+    main = "Active volunteers",
+    ylab = "Number of active volunteers", xlab = "Year")
 
 toplot = messages[!is.na(created_at), list(posts = .N), by = list(month = zoo::as.yearmon(created_at))]
-plot(toplot[order(month)], type = 'b',pch = 20, col = 2, main = "Forum messages")
+plot(toplot[order(month)], type = 'b',pch = 20, col = 2, 
+    main = "Forum messages",
+    ylab = "Number of posts", xlab = "Year")
 toplot[order(posts)]
 
 dev.off()
