@@ -376,9 +376,8 @@ vpo = vpo[, list(
         placebo_type_mix = uniqueN(project_soort) / .N), 
     by = gebruiker_id]
 
-pdf("~/repos/citsci/out/fig_6_returns.pdf", width = 9, height = 5)
-mypar(mfrow = c(1, 2))
-
+pdf("~/repos/citsci/out/fig_6_returns.pdf")
+mypar()
 plot(vpo[, .N, by = floor(same_org * 10) / 10][order(floor)], 
     main = "Returns to organisation",
     xlab = "Share returns",
@@ -386,16 +385,7 @@ plot(vpo[, .N, by = floor(same_org * 10) / 10][order(floor)],
     lwd = 1.5, log = 'y',, type = 'o', pch = 19)
 lines(vpo[, .N, by = floor(same_placebo_org * 10) / 10][order(floor)], 
     col = 2, lwd = 1.5, type = 'o', pch = 19)
-
-plot(vpo[, .N, by = floor(same_org_direct * 10) / 10][order(floor)], 
-    main = "Direct returns to organisation",
-    xlab = "Share returns",
-    ylab = "",
-    lwd = 1.5, log = 'y', type = 'o', pch = 19)
-lines(vpo[, .N, by = floor(same_placebo_org_direct * 10) / 10][order(floor)], 
-    col = 2, lwd = 1.5, type = 'o', pch = 19)
-
-legend("topright", fill = 1:2, legend = c("Actual", "Baseline"))
+text(x = c(0.4, 0.6), y = c(60, 1000), labels = c("Actual", "Baseline"), col = c(2, 1))
 dev.off()
 
 mean(vpo[nproj > 1, same_org])
