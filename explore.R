@@ -256,8 +256,8 @@ toplot = idxr[,
 pdf("~/repos/citsci/out/fig_3_sharebynew.pdf")
 mypar()
 plot(toplot[order(ym)],
-    type = 'b', col = "red", lwd = 1.5, pch = 20,
-    xlab = "year",
+    type = 'b', col = 2, lwd = 1.5, pch = 20,
+    xlab = "Year",
     ylab = "share entries")
 dev.off()
 
