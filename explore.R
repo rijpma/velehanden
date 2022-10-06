@@ -237,7 +237,7 @@ pdf("~/repos/citsci/out/fig_2_old_volunteers_byproject.pdf")
 mypar()
 hist(new_volunteers$ratio_pre_existing_volunteers, 
     xlab = "Share pre-existing volunteers in project", 
-    ylab = "N projects",
+    ylab = "Number of projects",
     main = "")
 dev.off()
 
