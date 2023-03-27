@@ -257,14 +257,16 @@ new_volunteers[ratio_new_volunteers > 0.8 & nvolunteers > 10 & year(start) > 201
 # figure 3
 # share output by new volunteers
 toplot = idxr[, 
-    list(share_by_new = mean(new4project)), 
+    list(perc_by_new = mean(new4project) * 100), 
     by = list(ym = zoo::as.yearmon(aangemaakt_op))]
 pdf("~/repos/citsci/out/fig_3_sharebynew.pdf")
 mypar()
 plot(toplot[order(ym)],
     type = 'b', col = 2, lwd = 1.5, pch = 20,
     xlab = "Year",
-    ylab = "share entries")
+    ylab = "Percent entries",
+    yaxt = "n")
+axis(2, at = axTicks(2), labels = paste0(axTicks(2), "%"))
 dev.off()
 
 # figure 4: 
