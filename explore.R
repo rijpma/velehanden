@@ -203,6 +203,10 @@ plot(toplot[order(month)], type = 'b',pch = 20, col = 2,
     main = "New volunteers",
     ylab = "Number of new volunteers", xlab = "Year")
 toplot[order(new_volunteers)]
+idxr[, list(new_volunteers = sum(newuser)), by = list(month = zoo::as.yearmon(aangemaakt_op), project)][order(new_volunteers)]
+
+projecten[order(aangemaakt_op), list(aangemaakt_op, titel)][aangemaakt_op < "2011-11-31"]
+projecten[order(aangemaakt_op), list(aangemaakt_op, titel)][aangemaakt_op < "2017-06-31"]
 
 toplot = idxr[, list(active_volunteers = uniqueN(gebruiker_id)), by = list(month = zoo::as.yearmon(aangemaakt_op))]
 plot(toplot[order(month)], type = 'b',pch = 20, col = 2, 
@@ -287,11 +291,12 @@ expact = idxr[year(aangemaakt_op) > 2011,
         start = min(aangemaakt_op),
         share_new = sum(newuser) / uniqueN(gebruiker_id),
         activity = .N / as.numeric(diff(range(as.Date(aangemaakt_op))) + 1),
+        entries = .N,
         experience = mean(experience[newinproject == TRUE][1:floor(uniqueN(gebruiker_id) / 2)])), 
         # so we look at experience of first 50% of users
         # -1 but then no log :( 
     by = list(project)]
-
+expact[, mean(1 - share_new)]
 
 pdf("~/repos/citsci/out/fig_4_experience_activity_proj.pdf", width = 9, height = 5)
 mypar(mfrow = c(1, 2))
@@ -568,7 +573,6 @@ pvs = lapply(cfs, `[`, i=, j = 4)
 screenreg(mlist, override.se = ses, override.pval = pvs)
 htmlreg(mlist, override.se = ses, override.pval = pvs,
     file = "~/repos/citsci/out/fig_8_9_regression.html")
-
 
 # proposition 5 #
 # delays and point system
