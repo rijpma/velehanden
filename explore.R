@@ -689,34 +689,34 @@ write.csv(do.call(rbind, out),
     "~/repos/citsci/out/size.csv")
 
 sumstatlist = list(
-    volunteers = idxr[, uniqueN(gebruiker_id), by = project][,
+    `N. volunteers` = idxr[, uniqueN(gebruiker_id), by = project][,
             list(min = min(V1), median = median(V1), mean = mean(V1), max = max(V1))],
-    scans = idxr[, uniqueN(scan_id), by = project][,
+    `N. scans` = idxr[, uniqueN(scan_id), by = project][,
             list(min = min(V1), median = median(V1), mean = mean(V1), max = max(V1))],
-    duration = idxr[, as.numeric(diff(range(aangemaakt_op), units = "days")), by = project][,
+    `Duration (days)` = idxr[, as.numeric(diff(range(aangemaakt_op), units = "days")), by = project][,
             list(min = min(V1), median = median(V1), mean = mean(V1), max = max(V1))],
-    project_appeal = idxr[, project_appeal(.SD), by = project][,
-            list(min = min(V1), median = median(V1), mean = mean(V1), max = max(V1))],
-    activity_ratio = idxr[, activity_ratio(.SD), by = project][,
-            list(min = min(V1), median = median(V1), mean = mean(V1), max = max(V1))],
-    # variation_periodicity does not seem to work
-    # omit distribution effort as well?
-    distribution_effort = 
-        # omit these two project because they only had one contributor (gini = 0)
-        idxr[!project %in% c("bhic", "picvh_pvdm"), distribution_effort(.SD), by = project][,
-            list(min = min(V1), median = median(V1), mean = mean(V1), max = max(V1))],
-    public_contribution = idxr[, public_contribution(.SD), by = project][,
-            list(min = min(V1), median = median(V1), mean = mean(V1), max = max(V1))],
+    # `Project appeal` = idxr[, project_appeal(.SD), by = project][,
+    #         list(min = min(V1), median = median(V1), mean = mean(V1), max = max(V1))],
+    # `Activity ratio` = idxr[, activity_ratio(.SD), by = project][,
+    #         list(min = min(V1), median = median(V1), mean = mean(V1), max = max(V1))],
+    # # variation_periodicity does not seem to work
+    # # omit distribution effort as well?
+    # `Distribution of effort` = 
+    #     # omit these two project because they only had one contributor (gini = 0)
+    #     idxr[!project %in% c("bhic", "picvh_pvdm"), distribution_effort(.SD), by = project][,
+    #         list(min = min(V1), median = median(V1), mean = mean(V1), max = max(V1))],
+    # `Public contribution` = idxr[, public_contribution(.SD), by = project][,
+    #         list(min = min(V1), median = median(V1), mean = mean(V1), max = max(V1))],
     # sustained_engagement requires dropping 1 contribution volunteers
-    ratio_new_volunteers = idxr[, ratio_new_volunteers(.SD), by = project][,
+    `Ratio of new volunteers` = idxr[, ratio_new_volunteers(.SD), by = project][,
             list(min = min(V1), median = median(V1), mean = mean(V1), max = max(V1))],
-    ratio_platform_members = idxr[, ratio_platform_members(.SD), by = project][,
+    `Ratio of platform members` = idxr[, ratio_platform_members(.SD), by = project][,
             list(min = min(V1), median = median(V1), mean = mean(V1), max = max(V1))],
-    feedback_delay = delays[delay > (2 / 84600), feedback_delay(.SD), by = project][,
+    `Feedback delay (days)` = delays[delay > (2 / 84600), feedback_delay(.SD), by = project][,
             list(min = min(V1), median = median(V1), mean = mean(V1), max = max(V1))],
-    n_messages = messages[, .N, by = project_id][, 
+    `N. messages` = messages[, .N, by = project_id][, 
             list(min = min(N), median = median(N), mean =  mean(N), max = max(N))],
-    response_times = response_times[!is.na(response_time), mean(as.numeric(response_time)), by = project_id][, 
+    `Forum response time (hours)` = response_times[!is.na(response_time), mean(as.numeric(response_time)), by = project_id][, 
             list(min = min(V1), median = median(V1), mean =  mean(V1), max = max(V1))] / 60 / 60
 )
 
