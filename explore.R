@@ -230,15 +230,21 @@ new_volunteers = idxr[,
         nscans = .N),
     by = list(project)]
 new_volunteers[, ratio_pre_existing_volunteers := 1 - ratio_new_volunteers]
+new_volunteers[, percent_pre_existing_volunteers := ratio_pre_existing_volunteers * 100]
 
 # figure 2
 # distribution of shares new volunteers
 pdf("~/repos/citsci/out/fig_2_old_volunteers_byproject.pdf")
 mypar()
-hist(new_volunteers$ratio_pre_existing_volunteers, 
-    xlab = "Share pre-existing volunteers in project", 
+toplot = hist(new_volunteers$percent_pre_existing_volunteers, plot = FALSE)
+plot(toplot,
+    col = "lightgray",
+    xlab = "Percent pre-existing volunteers in project", 
     ylab = "Number of projects",
+    xaxt = "n",
+    ylim = range(pretty(toplot$counts)),
     main = "")
+axis(side = 1, at = axTicks(side = 1), labels = paste0(axTicks(side = 1), "%"))
 dev.off()
 
 # overall averages
