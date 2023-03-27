@@ -679,6 +679,11 @@ toplot[, monthtotal := sum(new_volunteers), by = month]
 # typically also be linked to a single project 
 
 # summary statistics #
+# -------------------#
+
+# date range
+range(idxr$aangemaakt_op)
+
 out = list(
     `Number of public projects on VH since 2011, June 20 (start platform):` = 
         projecten[naam != "demo", uniqueN(project_id)],
