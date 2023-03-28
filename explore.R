@@ -289,32 +289,32 @@ out = ggplot(expact, aes(log(experience), log(activity))) + geom_point() + geom_
 expact = idxr[year(aangemaakt_op) > 2011, 
     list(
         start = min(aangemaakt_op),
-        share_new = sum(newuser) / uniqueN(gebruiker_id),
+        perc_new = sum(newuser) / uniqueN(gebruiker_id) * 100,
         activity = .N / as.numeric(diff(range(as.Date(aangemaakt_op))) + 1),
         entries = .N,
         experience = mean(experience[newinproject == TRUE][1:floor(uniqueN(gebruiker_id) / 2)])), 
         # so we look at experience of first 50% of users
         # -1 but then no log :( 
     by = list(project)]
-expact[, mean(1 - share_new)]
+expact[, mean(1 - perc_new)]
 
 pdf("~/repos/citsci/out/fig_4_experience_activity_proj.pdf", width = 9, height = 5)
 mypar(mfrow = c(1, 2))
-plot(log(activity) ~ share_new, data = expact, 
+plot(log(activity) ~ perc_new, data = expact, 
     pch = 20,
     axes = FALSE,
     xlab = "share new volunteers",
-    ylab = "log(entries per day)")
-m_share = lm(log(activity) ~ share_new, data = expact)
+    ylab = "entries per day")
+m_share = lm(log(activity) ~ perc_new, data = expact)
 abline(m_share, col = 2)
-axis(1)
+axis(1, at = axTicks(1), labels = paste0(axTicks(1), "%"))
 axis(2, at = log(10^(0:5)), labels = 10^(0:5))
 
 plot(log(activity) ~ log(experience), data = expact, 
     pch = 20,
     axes = FALSE,
-    xlab = "log(average volunteer experience)",
-    ylab = "log(entries per day)")
+    xlab = "average volunteer experience (entries)",
+    ylab = "entries per day")
 m_exp = lm(log(activity) ~ log(experience), data = expact)
 abline(m_exp, col = 2)
 axis(1, at = log(10^(0:5)), labels = 10^(0:5))
@@ -373,32 +373,36 @@ vpo[, placebotype := sample(project_soort)] # this accounts for the number of vo
 # figure 6
 vpo = vpo[, list(
         nproj = .N, 
-        same_org = mean(duplicated(org)),
-        same_org_wgt = sum(invweight[duplicated(org)]),
-        same_placebo_org = mean(duplicated(placeboorg), na.rm = TRUE),
-        same_org_direct = mean(org == shift(org, fill = FALSE), na.rm = TRUE),
-        same_placebo_org_direct = mean(placeboorg == shift(placeboorg, fill = FALSE), na.rm = TRUE),
+        same_org = mean(duplicated(org)) * 100,
+        same_org_wgt = sum(invweight[duplicated(org)]) * 100,
+        same_placebo_org = mean(duplicated(placeboorg), na.rm = TRUE) * 100,
+        same_org_direct = mean(org == shift(org, fill = FALSE), na.rm = TRUE) * 100,
+        same_placebo_org_direct = mean(placeboorg == shift(placeboorg, fill = FALSE), na.rm = TRUE) * 100,
         org_mix = uniqueN(org) / .N, 
         placebo_org_mix = uniqueN(org) / .N,
         # same for project_type
-        same_type = mean(duplicated(project_soort)),
-        same_placebo_type = mean(duplicated(placebotype), na.rm = TRUE),
-        same_type_direct = mean(project_soort == shift(project_soort, fill = FALSE), na.rm = TRUE),
-        same_placebo_type_direct = mean(placebotype == shift(placebotype, fill = FALSE), na.rm = TRUE),
+        same_type = mean(duplicated(project_soort)) * 100,
+        same_placebo_type = mean(duplicated(placebotype), na.rm = TRUE) * 100,
+        same_type_direct = mean(project_soort == shift(project_soort, fill = FALSE), na.rm = TRUE) * 100,
+        same_placebo_type_direct = mean(placebotype == shift(placebotype, fill = FALSE), na.rm = TRUE) * 100,
         type_mix = uniqueN(project_soort) / .N, 
         placebo_type_mix = uniqueN(project_soort) / .N), 
     by = gebruiker_id]
 
+vpo[, lapply(.SD, max), .SDcols = patterns("same")]
+
 pdf("~/repos/citsci/out/fig_6_returns.pdf")
 mypar()
-plot(vpo[, .N, by = floor(same_org * 10) / 10][order(floor)], 
+plot(vpo[, .N, by = same_org - (same_org %% 10)][order(same_org)], 
     main = "Returns to organisation",
     xlab = "Share returns",
     ylab = "N volunteers",
+    xaxt = "n",
     lwd = 1.5, log = 'y',, type = 'o', pch = 19)
-lines(vpo[, .N, by = floor(same_placebo_org * 10) / 10][order(floor)], 
+lines(vpo[, .N, by = same_placebo_org - (same_placebo_org %% 10)][order(same_placebo_org)], 
     col = 2, lwd = 1.5, type = 'o', pch = 19)
-text(x = c(0.4, 0.6), y = c(60, 1000), labels = c("Actual", "Baseline"), col = c(2, 1))
+axis(1, at = axTicks(1), labels = paste0(axTicks(1), "%"))
+text(x = c(40, 60), y = c(60, 800), labels = c("Baseline", "Actual"), col = c(2, 1))
 dev.off()
 
 mean(vpo[nproj > 1, same_org])
