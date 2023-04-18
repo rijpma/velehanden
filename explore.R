@@ -465,15 +465,17 @@ response_times[, group := ifelse(naam %in% ..group1, "group1", "other")]
 response_times[, group := ifelse(naam %in% ..group2, "group2", group)]
 
 # figure 7
+times = c(hr = 1, dy = 24, wk = 24 * 7)
 pdf("~/repos/citsci/out/fig_7_hist_weekly_response_times.pdf")
 mypar()
 hist(log10(as.numeric(response_times$response_time) / 3600), 
     axes = FALSE,
     breaks = 30,
-    xlab = "log(response time in hours)", 
+    xlab = "response time in hours", 
     main = "")
 axis(2)
 axis(1, at = -4:4, labels = 10^(-4:4))
+abline(v = log10(times), lty = 2)
 dev.off()
 
 quantile(na.omit(response_times$response_time) / 60, 1:10/10)
