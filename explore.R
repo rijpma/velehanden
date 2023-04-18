@@ -440,6 +440,19 @@ pdf("~/repos/citsci/out/fig_5_flows_org.pdf", width = 9)
 alluvial(toplot[, 1:2], freq = toplot$N, col = toplot$col, cw = 0.2, cex = 0.8)
 dev.off()
 
+nproj = lijst[, .N, by = Klantnaam][order(-N)][1:10]
+outtab = dcast(toplot, from ~ to, value.var = "N")
+outtab = merge(outtab, nproj, by.x = "from", by.y = "Klantnaam", all.x = TRUE)
+setorder(outtab, -N, na.last = TRUE)
+outtab = outtab[, c("from", outtab$from, "N"), with = FALSE]
+# outtab[, from := paste0(from, " (", N, " projecten)")]
+outtab[, N := NULL]
+outtab[, (2:7) := round(.SD / rowSums(.SD) * 100), .SDcols = 2:7]
+outtab[, (2:7) := lapply(.SD, paste, "%"), .SDcols = 2:7]
+writeLines(
+    knitr::kable(outtab, format = "html"),
+    "~/repos/citsci/out/flowttable.html")
+
 # proposition 3 #
 # ------------- # 
 # forum activity and project speed
