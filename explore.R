@@ -133,7 +133,7 @@ setnames(idxr, "Naam", "project")
 setnames(idxr, "Klantnaam", "org")
 
 # merge project types into idxr
-idxr = projecten[, list(naam, project_soort)][idxr, on = c(naam = "project")]
+idxr = projecten[, list(naam, status, project_soort)][idxr, on = c(naam = "project")]
 setnames(idxr, "naam", "project")
 
 # calculate delays to controle
