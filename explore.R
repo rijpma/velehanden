@@ -136,6 +136,13 @@ setnames(idxr, "Klantnaam", "org")
 idxr = projecten[, list(naam, status, project_soort)][idxr, on = c(naam = "project")]
 setnames(idxr, "naam", "project")
 
+# some sumstats by project status
+idxr[, .N, by = list(project, status)][, mean(N), by = status]
+idxr[, .N, by = list(project, status)][, summary(N), by = status]
+idxr[, .N, by = list(project, status)][, print(summary(N)), by = status]
+idxr[, diff(range(aangemaakt_op)), by = list(project, status)][, mean(V1), by = status]
+
+
 # calculate delays to controle
 delays = merge(
     x = idxr[, list(date_entered = last(aangemaakt_op),
