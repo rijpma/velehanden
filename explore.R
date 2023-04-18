@@ -78,6 +78,16 @@ messages = merge(
     by = c("project_id", "user_id"), all.x = TRUE, all.y = FALSE)
 messages[, created_at := as.POSIXct(created_at, format = "%Y-%m-%d %H:%M:%OS")]
 
+messages = merge(
+    messages, 
+    projecten[, list(project_id = id, status)],
+    by = c("project_id"), 
+    all.x = TRUE, all.y = FALSE)
+
+messages = messages[status == "afgerond"]
+
+messages[, created_at := as.POSIXct(created_at, format = "%Y-%m-%d %H:%M:%OS")]
+
 # entry data
 ctrl = readRDS("allctrl.rds.gz")
 idxr = readRDS("allidxr.rds.gz")
@@ -135,6 +145,8 @@ setnames(idxr, "Klantnaam", "org")
 # merge project types into idxr
 idxr = projecten[, list(naam, status, project_soort)][idxr, on = c(naam = "project")]
 setnames(idxr, "naam", "project")
+
+idxr = idxr[status == "afgerond"]
 
 # some sumstats by project status
 idxr[, .N, by = list(project, status)][, mean(N), by = status]
@@ -652,7 +664,7 @@ dev.off()
 # is the delay issue driven by point spending possibility?
 
 # figure 10
-toplot_entry = projecten[, list(project = naam, project_id, has_coupons, has_coupon_create, has_transactions, punten_bij_invoeren, punten_bij_controle, incentive)][toplot_entry, on = c("project")]
+toplot_entry = projecten[status == "afgerond", list(project = naam, project_id, has_coupons, has_coupon_create, has_transactions, punten_bij_invoeren, punten_bij_controle, incentive)][toplot_entry, on = c("project")]
 pdf("~/repos/citsci/out/fig_10_delays_activity_bypoints.pdf", width = 9, height = 5)
 mypar(mfrow = c(1, 2))
 plot(log10(scans_per_week) ~ log10(mean_check_time), 
