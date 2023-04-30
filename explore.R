@@ -502,7 +502,10 @@ dev.off()
 
 # before after break (hours)
 response_times[!is.na(first_response), median(response_time / 3600, na.rm = TRUE), by = zoo::as.yearmon(first_response) > 2016.6][order(zoo)]
-
+response_times[, mean(response_time / 3600 > times["hr"]]
+response_times[, mean(response_time / 3600 > times["dy"]]
+response_times[, mean(response_time / 3600 > times["wk"]]
+    
 # figure 8, response times and activity
 toplot_forum = response_times[, 
     list(mean_response_time = mean(as.numeric(response_time) / 60 / 60, na.rm = TRUE)), 
