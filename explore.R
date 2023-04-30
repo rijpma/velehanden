@@ -505,12 +505,15 @@ response_times[!is.na(first_response), median(response_time / 3600, na.rm = TRUE
 
 # figure 8, response times and activity
 toplot_forum = response_times[, 
-    list(mean_response_time = mean(as.numeric(response_time) / 60 / 60)), 
+    list(mean_response_time = mean(as.numeric(response_time) / 60 / 60, na.rm = TRUE)), 
     by = list(project_id, week = week(first_response), year = year(first_response))]
 
 toplot_forum = proj_speed[toplot_forum, on = c("project_id", "week", "year")]
-toplot_forum_proj = toplot_forum[, list(scans = sum(scans_per_week), mean_response_time = mean(mean_response_time)),
+toplot_forum_proj = toplot_forum[, 
+    list(scans = sum(scans_per_week, na.rm = TRUE), 
+        mean_response_time = mean(mean_response_time, na.rm = TRUE)),
     by = project_id]
+toplot_forum_proj = toplot_forum_proj[scans > 0]
 
 # add delays
 toplot_entry = delays[delay > (2 / 84600), # so quick is probably auto-accept
