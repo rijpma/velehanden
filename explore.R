@@ -421,6 +421,7 @@ idxr[, largeorg := ifelse(org %in% c("Het Utrechts Archief",
         "Westfries Archief",
         "Regionaal Archief Nijmegen"),
     org, "other")]
+idxr[largeorg == "other", uniqueN(org)]
 toplot = idxr[!is.na(org), list(aangemaakt_op = min(aangemaakt_op)), by = list(project, org, largeorg, project_soort, nproj_byorg, gebruiker_id)]
 toplot = toplot[order(gebruiker_id, aangemaakt_op)]
 toplot = toplot[, 
@@ -462,15 +463,25 @@ proj_speed = idxr[,
     by = list(project, week = week(aangemaakt_op), year = year(aangemaakt_op))]
 proj_speed = projecten[, .(project_id = id, project = naam)][proj_speed, on = "project"]
 
+# no parent_id means it is the parent
 messages[parent_id == "", parent_id := id]
 messages[, thread_length := .N, by = parent_id]
+# thread_length = 1 is no response and can't be calculated
+messages[, nproject := uniqueN(project_id), by = parent_id]
+# nproject > 1 happens when project_id = "", but these obviously cannot be linked to a project, so should be dropped
+messages[, uniqueN(parent_id[nproject == 2]) / uniqueN(parent_id)]
+messages[, quantile(created_at, na.rm = TRUE), by = nproject]
+
 messages[, mean(thread_length == 1)]
-response_times = messages[thread_length > 1][
-    order(parent_id, created_at), 
-    list(
-        topic_started = created_at[1],
-        first_response = created_at[2]),
-    by = list(parent_id, project_id)]
+response_times = messages[
+    thread_length > 1      # should have reply
+    & nproject == 1        # should not have multiple or missing projects
+    & parent_id != 21674][ # drop projet with missing time
+        order(parent_id, created_at), 
+        list(
+            topic_started = created_at[1],
+            first_response = created_at[2]),
+        by = list(parent_id, project_id)]
 response_times[, response_time := first_response - topic_started]
 
 response_times = projecten[, .(project_id, naam)][response_times, on = "project_id"]
@@ -502,10 +513,10 @@ dev.off()
 
 # before after break (hours)
 response_times[!is.na(first_response), median(response_time / 3600, na.rm = TRUE), by = zoo::as.yearmon(first_response) > 2016.6][order(zoo)]
-response_times[, mean(response_time / 3600 > times["hr"]]
-response_times[, mean(response_time / 3600 > times["dy"]]
-response_times[, mean(response_time / 3600 > times["wk"]]
-    
+response_times[, mean(response_time / 3600 > times["hr"])]
+response_times[, mean(response_time / 3600 > times["dy"])]
+response_times[, mean(response_time / 3600 > times["wk"])]
+
 # figure 8, response times and activity
 toplot_forum = response_times[, 
     list(mean_response_time = mean(as.numeric(response_time) / 60 / 60, na.rm = TRUE)), 
