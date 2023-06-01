@@ -421,9 +421,17 @@ idxr[, largeorg := ifelse(org %in% c("Het Utrechts Archief",
         "Westfries Archief",
         "Regionaal Archief Nijmegen"),
     org, "other")]
+
+# number of organisations in category "other"
 idxr[largeorg == "other", uniqueN(org)]
+
 toplot = idxr[!is.na(org), list(aangemaakt_op = min(aangemaakt_op)), by = list(project, org, largeorg, project_soort, nproj_byorg, gebruiker_id)]
 toplot = toplot[order(gebruiker_id, aangemaakt_op)]
+
+# percentage volunteers returning for each organisation
+toplot[nproj_byorg > 1, list(org, retention = org == shift(org, type = "lead")), by = gebruiker_id][, mean(retention, na.rm = TRUE), by = org][order(V1)]
+toplot[nproj_byorg > 1, list(largeorg, retention = org == shift(org, type = "lead")), by = gebruiker_id][, mean(retention, na.rm = TRUE), by = largeorg]
+
 toplot = toplot[, 
     list(
         from = largeorg, 
